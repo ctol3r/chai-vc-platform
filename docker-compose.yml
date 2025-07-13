@@ -1,1 +1,20 @@
-# docker-compose.yml - placeholder
+version: '3'
+services:
+  gateway:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+  psv-api:
+    build: ./backend
+    depends_on:
+      - psv-db
+  source-connector:
+    image: alpine
+  verification-worker:
+    image: alpine
+  notification-service:
+    image: alpine
+  ai-matcher-service:
+    build: ./ai-matcher-service
+  psv-db:
+    image: postgres:14
