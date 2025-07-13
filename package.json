@@ -1,0 +1,19 @@
+{
+  "name": "chai-vc-platform",
+  "version": "1.0.0",
+  "description": "End-to-end healthcare credentialing and hiring verification.",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "jest": "^30.0.4",
+    "ts-jest": "^29.4.0",
+    "typescript": "^5.8.3"
+  }
+}
