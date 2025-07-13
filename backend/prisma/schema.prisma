@@ -1,1 +1,11 @@
-// schema.prisma - placeholder or stub for chai-vc-platform
+// Basic schema showing a credential with a provisional status flag
+model Credential {
+  id        String @id
+  data      Json
+  status    CredentialStatus @default(PROVISIONAL)
+}
+
+enum CredentialStatus {
+  PROVISIONAL
+  OFFICIAL
+}
