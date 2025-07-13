@@ -1,0 +1,13 @@
+{
+  "name": "chai-vc-backend",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "dependencies": {
+    "snarkjs": "^0.7.1"
+  },
+  "scripts": {
+    "verify": "node src/zkp/verify.cjs",
+    "test": "echo \"No backend tests\""
+  }
+}
