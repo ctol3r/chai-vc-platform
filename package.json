@@ -1,0 +1,25 @@
+{
+  "name": "chai-vc-platform",
+  "version": "1.0.0",
+  "description": "End-to-end healthcare credentialing and hiring verification.",
+  "main": "index.js",
+  "scripts": {
+    "dev": "next dev frontend",
+    "build": "next build frontend",
+    "start": "next start frontend"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "next": "^15.3.5",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "24.0.12",
+    "@types/react": "19.1.8",
+    "typescript": "5.8.3"
+  }
+}
