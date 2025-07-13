@@ -1,0 +1,15 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "main": "src/server.ts",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "start": "node --loader ts-node/esm src/server.ts"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "prom-client": "^14.1.1",
+    "ts-node": "^10.9.1"
+  }
+}
