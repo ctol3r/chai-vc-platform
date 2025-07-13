@@ -1,0 +1,10 @@
+user_id,credential_type,verification_result,timestamp
+user1@example.com,nursing_license,verified,2023-07-01
+user2@example.com,nursing_license,verified,2023-07-02
+user3@example.com,doctor_license,failed,2023-07-02
+user2@example.com,nursing_license,verified,2023-07-03
+user4@example.com,doctor_license,verified,2023-07-03
+user5@example.com,nursing_license,verified,2023-07-04
+user6@example.com,doctor_license,verified,2023-07-04
+user1@example.com,nursing_license,failed,2023-07-05
+user7@example.com,nursing_license,verified,2023-07-05
