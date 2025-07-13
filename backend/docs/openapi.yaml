@@ -1,0 +1,71 @@
+openapi: 3.0.0
+info:
+  title: Chai VC Platform API
+  version: 1.0.0
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                example:
+                  status: ok
+  /credentials:
+    get:
+      summary: List credentials
+      responses:
+        '200':
+          description: List of credentials
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Credential'
+    post:
+      summary: Create credential
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Credential'
+      responses:
+        '201':
+          description: Created
+  /credentials/{id}:
+    get:
+      summary: Get credential by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Credential detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Credential'
+components:
+  schemas:
+    Credential:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        issued:
+          type: string
+          format: date-time

@@ -1,0 +1,6 @@
+node_modules/
+*.py[cod]
+__pycache__/
+.DS_Store
+pytest_cache/
+backend/node_modules/
