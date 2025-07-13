@@ -1,1 +1,6 @@
-// match.py - placeholder or stub for chai-vc-platform
+"""Routes for the AI matcher service."""
+
+
+def match_endpoint() -> str:
+    """Placeholder match endpoint."""
+    return "match"
