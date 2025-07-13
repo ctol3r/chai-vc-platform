@@ -1,0 +1,11 @@
+groups:
+- name: vc_rules
+  rules:
+  - alert: VCIssueSlow
+    expr: vc_issue_duration_seconds > 2
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: VC issuance latency high
+      description: vc_issue_duration_seconds has exceeded 2 seconds
