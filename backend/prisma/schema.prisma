@@ -1,1 +1,17 @@
-// schema.prisma - placeholder or stub for chai-vc-platform
+// Prisma schema for chai-vc-platform
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  timestamp DateTime @default(now())
+  eventType String
+  details   Json
+}
