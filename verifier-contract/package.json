@@ -1,0 +1,11 @@
+{
+  "name": "verifier-contract",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "deploy": "npx hardhat run scripts/deploy.js"
+  },
+  "dependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^3.0.0"
+  }
+}
