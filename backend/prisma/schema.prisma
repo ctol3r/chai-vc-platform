@@ -1,1 +1,32 @@
-// schema.prisma - placeholder or stub for chai-vc-platform
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Clinician {
+  id          String       @id @default(uuid())
+  firstName   String
+  lastName    String
+  credentials Credential[]
+}
+
+model Issuer {
+  id          String       @id @default(uuid())
+  name        String
+  credentials Credential[]
+}
+
+model Credential {
+  id          String    @id @default(uuid())
+  type        String
+  issuedAt    DateTime  @default(now())
+  clinician   Clinician @relation(fields: [clinicianId], references: [id])
+  clinicianId String
+  issuer      Issuer    @relation(fields: [issuerId], references: [id])
+  issuerId    String
+}
+
