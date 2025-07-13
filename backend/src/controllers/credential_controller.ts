@@ -1,1 +1,4 @@
-// credential_controller.ts - placeholder or stub for chai-vc-platform
+import { bulkIssueFromCSV } from './bulk_issue';
+
+// Expose controller functions for credential management
+export { bulkIssueFromCSV };
