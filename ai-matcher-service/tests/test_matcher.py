@@ -1,1 +1,7 @@
-// test_matcher.py - placeholder or stub for chai-vc-platform
+"""Basic tests for the matcher service."""
+
+
+def test_placeholder() -> None:
+    """Simple test that always passes."""
+    assert True
+
