@@ -1,1 +1,7 @@
-// test_matcher.py - placeholder or stub for chai-vc-platform
+"""Tests for the AI matcher service."""
+
+
+def test_placeholder() -> None:
+    """Simple placeholder test so pytest runs cleanly."""
+    assert True
+
