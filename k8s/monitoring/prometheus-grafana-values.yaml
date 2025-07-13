@@ -1,0 +1,15 @@
+# Helm values for kube-prometheus-stack
+# Exposes Prometheus, Grafana and Alertmanager via NodePort services
+# Adjust service types and persistence settings for production use
+
+alertmanager:
+  service:
+    type: NodePort
+
+prometheus:
+  service:
+    type: NodePort
+
+grafana:
+  service:
+    type: NodePort
