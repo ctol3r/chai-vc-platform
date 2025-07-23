@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es2019",
+    "rootDir": "./backend/src",
+    "outDir": "./dist/src",
+    "esModuleInterop": true,
+    "strict": true,
+    "moduleResolution": "node"
+  },
+  "include": ["backend/src/**/*.ts"],
+  "exclude": ["**/__tests__"]
+}
