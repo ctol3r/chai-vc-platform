@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "CHAI Verification",
+  "description": "Displays CHAI verification status on LinkedIn profiles.",
+  "version": "1.0",
+  "permissions": [
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://www.linkedin.com/*",
+    "https://chai.example.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://www.linkedin.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
