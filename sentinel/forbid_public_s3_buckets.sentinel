@@ -1,0 +1,12 @@
+import "tfplan/v2" as tfplan
+
+public_buckets = filter tfplan.resource_changes as rc {
+    rc.type is "aws_s3_bucket" and (
+        rc.change.after.acl is "public-read" or
+        rc.change.after.acl is "public-read-write"
+    )
+}
+
+main = rule {
+    length(public_buckets) is 0
+}
