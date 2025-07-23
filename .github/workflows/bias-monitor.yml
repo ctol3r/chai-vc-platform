@@ -1,0 +1,13 @@
+name: Bias Monitor
+on:
+  schedule:
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+jobs:
+  run-bias-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run disparate impact tests
+        run: |
+          python bias-monitor-service/src/run_disparate_impact_test.py
