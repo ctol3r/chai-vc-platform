@@ -1,0 +1,27 @@
+name: Generate GraphQL Docs
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+      - name: Generate schema docs
+        env:
+          GRAPHQL_ENDPOINT: ${{ secrets.GRAPHQL_ENDPOINT }}
+        run: |
+          python scripts/generate_graphql_docs.py
+      - name: Commit docs
+        run: |
+          git config user.email "github-actions@github.com"
+          git config user.name "github-actions"
+          git add developer-portal/schema.json developer-portal/schema.md
+          git commit -m "Update GraphQL schema docs" || echo "No changes"
+          git push
