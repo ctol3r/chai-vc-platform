@@ -1,0 +1,18 @@
+{
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "name": "ai-matcher-service",
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "echo Building ai-matcher-service"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "echo Testing ai-matcher-service"
+      }
+    }
+  }
+}
