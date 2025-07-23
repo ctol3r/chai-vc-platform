@@ -1,1 +1,7 @@
 // ci.yml - placeholder or stub for chai-vc-platform
+# Build and sign Docker images with cosign
+# jobs:
+#   build:
+#     steps:
+#       - run: docker build -t myimage .
+#       - run: ./scripts/cosign-sign.sh myimage

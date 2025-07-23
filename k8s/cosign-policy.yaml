@@ -1,0 +1,12 @@
+# ClusterImagePolicy requiring cosign signatures
+apiVersion: policy.sigstore.dev/v1beta1
+kind: ClusterImagePolicy
+metadata:
+  name: require-cosign-signature
+spec:
+  images:
+  - glob: "docker.io/myorg/*"
+  authorities:
+  - key:
+      secretRef:
+        name: cosign-public-key
