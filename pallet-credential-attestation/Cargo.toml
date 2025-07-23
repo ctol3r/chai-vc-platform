@@ -1,0 +1,11 @@
+[package]
+name = "pallet-credential-attestation"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+sp-core = "37.0.0"
+
+[dev-dependencies]
+
