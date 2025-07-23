@@ -1,0 +1,33 @@
+#!/bin/sh
+set -eu
+
+# RPC endpoint of the Substrate node
+RPC_ENDPOINT=${RPC_ENDPOINT:-http://substrate-node:9933}
+# Maximum allowed age of the latest block in seconds
+AGE_LIMIT=${AGE_LIMIT:-300}
+# Pod selector used to restart the node
+POD_SELECTOR=${POD_SELECTOR:-app=substrate-node}
+
+# Fetch the latest block and extract the timestamp
+block_json=$(curl -s -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"chain_getBlock"}' "$RPC_ENDPOINT")
+
+block_ts_hex=$(echo "$block_json" | grep -o '"now":"0x[0-9a-f]*"' | head -n1 | sed -E 's/.*"0x([0-9a-f]+)"/\1/')
+
+if [ -z "$block_ts_hex" ]; then
+  echo "Could not parse block timestamp"
+  exit 1
+fi
+
+block_ts=$((16#$block_ts_hex / 1000))
+now=$(date +%s)
+age=$((now - block_ts))
+
+echo "Latest block age: $age seconds"
+
+if [ "$age" -gt "$AGE_LIMIT" ]; then
+  echo "Stalled Aura slot detected. Restarting node pods..."
+  kubectl delete pod -l "$POD_SELECTOR"
+else
+  echo "Node is healthy"
+fi
