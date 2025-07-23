@@ -1,0 +1,3 @@
+resources:
+  - ai-matcher-service.yaml
+  - backend-deployment.yaml

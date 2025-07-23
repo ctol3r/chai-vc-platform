@@ -1,0 +1,50 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: chai-vc-staging
+spec:
+  project: default
+  source:
+    repoURL: https://example.com/chai-vc-platform.git
+    path: k8s/overlays/staging
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: chai-vc-staging
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: chai-vc-perf
+spec:
+  project: default
+  source:
+    repoURL: https://example.com/chai-vc-platform.git
+    path: k8s/overlays/perf
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: chai-vc-perf
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: chai-vc-prod
+spec:
+  project: default
+  source:
+    repoURL: https://example.com/chai-vc-platform.git
+    path: k8s/overlays/prod
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: chai-vc-prod
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
