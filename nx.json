@@ -1,0 +1,19 @@
+{
+  "npmScope": "chai",
+  "installation": {
+    "version": "21.2.3"
+  },
+  "tasksRunnerOptions": {
+    "default": {
+      "runner": "nx/tasks-runners/default",
+      "options": {
+        "cacheableOperations": ["build", "test", "lint"]
+      }
+    }
+  },
+  "workspaceLayout": {
+    "appsDir": "",
+    "libsDir": "libs"
+  },
+  "$schema": "./node_modules/nx/schemas/nx-schema.json"
+}
