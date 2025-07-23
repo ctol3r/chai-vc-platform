@@ -1,10 +1,7 @@
-import { useRouter } from 'next/router';
 import { useState } from 'react';
-import { t, Locale } from '../../i18n';
+import { t, Locale } from '../i18n';
 
-export default function Credential() {
-  const router = useRouter();
-  const { id } = router.query;
+export default function Home() {
   const [locale, setLocale] = useState<Locale>('en');
 
   return (
@@ -13,7 +10,7 @@ export default function Credential() {
         <option value="en">English</option>
         <option value="es">Espa\u00f1ol</option>
       </select>
-      <h1>{t('credential', locale)}: {id}</h1>
+      <h1>{t('welcome', locale)}</h1>
     </div>
   );
 }
