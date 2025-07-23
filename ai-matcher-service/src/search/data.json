@@ -1,0 +1,5 @@
+[
+  {"id": 1, "title": "Nurse Credentialing", "description": "Verify RN license and certifications", "category": "healthcare"},
+  {"id": 2, "title": "Physician Onboarding", "description": "Credential new physicians quickly", "category": "healthcare"},
+  {"id": 3, "title": "IT Security Audit", "description": "Ensure HIPAA compliance", "category": "it"}
+]
