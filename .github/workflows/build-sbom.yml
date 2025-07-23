@@ -1,0 +1,46 @@
+name: Build Containers and Publish SBOMs
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build ai-matcher-service image
+        run: docker build -t ai-matcher-service ./ai-matcher-service
+      - name: Generate SBOM for ai-matcher-service
+        uses: anchore/sbom-action@v0.16.0
+        with:
+          image: ai-matcher-service:latest
+          output-file: sbom-ai-matcher-service.cdx.json
+          format: cyclonedx-json
+      - name: Build backend image
+        run: docker build -t backend ./backend
+      - name: Generate SBOM for backend
+        uses: anchore/sbom-action@v0.16.0
+        with:
+          image: backend:latest
+          output-file: sbom-backend.cdx.json
+          format: cyclonedx-json
+      - name: Build frontend image
+        run: docker build -t frontend ./frontend
+      - name: Generate SBOM for frontend
+        uses: anchore/sbom-action@v0.16.0
+        with:
+          image: frontend:latest
+          output-file: sbom-frontend.cdx.json
+          format: cyclonedx-json
+      - name: Upload SBOM artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: container-sboms
+          path: '*.cdx.json'
+
