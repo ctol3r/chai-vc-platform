@@ -1,0 +1,18 @@
+{
+  "name": "chai-vc-platform",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "backend/src/server.ts",
+  "scripts": {
+    "start": "ts-node backend/src/server.ts",
+    "test": "echo 'No tests specified'"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "pdfkit": "^0.13.0"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.1",
+    "typescript": "^4.9.5"
+  }
+}
