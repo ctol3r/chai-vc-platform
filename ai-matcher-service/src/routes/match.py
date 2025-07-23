@@ -1,1 +1,1 @@
-// match.py - placeholder or stub for chai-vc-platform
+"""Placeholder routes for matcher service."""
