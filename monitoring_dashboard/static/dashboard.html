@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>AI Monitoring Dashboard</title>
+</head>
+<body>
+<h1>AI Monitoring Dashboard</h1>
+<div>
+    <p>Accuracy: <span id="accuracy"></span></p>
+    <p>False Positive Rate: <span id="fpr"></span></p>
+    <p>Decision Latency: <span id="latency"></span> ms</p>
+</div>
+<script>
+async function fetchMetrics() {
+    const resp = await fetch('/metrics');
+    const data = await resp.json();
+    document.getElementById('accuracy').textContent = (data.accuracy * 100).toFixed(2) + '%';
+    document.getElementById('fpr').textContent = (data.false_positive_rate * 100).toFixed(2) + '%';
+    document.getElementById('latency').textContent = data.decision_latency.toFixed(2);
+}
+setInterval(fetchMetrics, 1000);
+fetchMetrics();
+</script>
+</body>
+</html>
