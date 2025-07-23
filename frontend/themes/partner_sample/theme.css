@@ -1,0 +1,14 @@
+:root {
+  --primary-color: #008000;
+  --background-color: #f2fff2;
+}
+body {
+  background: var(--background-color);
+  color: #333;
+  font-family: Arial, sans-serif;
+}
+header, footer {
+  background: var(--primary-color);
+  color: #fff;
+  padding: 1rem;
+}
