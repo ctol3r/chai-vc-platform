@@ -1,0 +1,32 @@
+name: OPA Terraform Validation
+
+on:
+  pull_request:
+    paths:
+      - 'terraform/**.tf'
+      - 'policy/**'
+      - '.github/workflows/terraform-opa.yml'
+
+jobs:
+  opa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.5.5
+      - name: Terraform Init
+        run: terraform init
+        working-directory: terraform
+      - name: Terraform Plan
+        run: terraform plan -out=tfplan
+        working-directory: terraform
+      - name: Convert Plan to JSON
+        run: terraform show -json tfplan > tfplan.json
+        working-directory: terraform
+      - name: OPA Policy Check
+        uses: open-policy-agent/conftest-action@v1
+        with:
+          files: terraform/tfplan.json
+          policy-path: policy
+
