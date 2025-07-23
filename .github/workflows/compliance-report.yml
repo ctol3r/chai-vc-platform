@@ -1,0 +1,28 @@
+name: Generate Compliance Report
+
+on:
+  schedule:
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+      - name: Install dependencies
+        run: pip install openai
+      - name: Generate report
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          python scripts/generate_compliance_report.py
+      - name: Upload report artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: compliance-report
+          path: compliance_reports/*.txt
