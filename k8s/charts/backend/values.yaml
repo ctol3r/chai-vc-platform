@@ -1,0 +1,7 @@
+replicaCount: 1
+image:
+  repository: backend
+  tag: latest
+  pullPolicy: IfNotPresent
+service:
+  port: 80
