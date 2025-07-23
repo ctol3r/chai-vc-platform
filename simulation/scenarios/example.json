@@ -1,0 +1,15 @@
+{
+  "credentials": [
+    {
+      "id": "cred1",
+      "issuer": "Hospital A",
+      "subject": "Doctor D",
+      "status": "active"
+    }
+  ],
+  "actions": [
+    {"type": "verify", "credential_id": "cred1"},
+    {"type": "revoke", "credential_id": "cred1"},
+    {"type": "verify", "credential_id": "cred1"}
+  ]
+}
