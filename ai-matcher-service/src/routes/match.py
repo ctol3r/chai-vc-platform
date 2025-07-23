@@ -1,1 +1,3 @@
-// match.py - placeholder or stub for chai-vc-platform
+def match():
+    """Placeholder function for matching logic."""
+    return "match result"
