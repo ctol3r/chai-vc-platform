@@ -1,0 +1,7 @@
+replicaCount: 1
+image:
+  repository: ai-matcher
+  tag: latest
+  pullPolicy: IfNotPresent
+service:
+  port: 5000

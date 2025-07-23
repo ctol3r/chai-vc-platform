@@ -1,0 +1,23 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+
+helmCharts:
+  - name: backend
+    path: ../../charts/backend
+    releaseName: backend
+    version: 0.1.0
+    valuesInline:
+      image:
+        tag: dev
+      replicaCount: 1
+  - name: ai-matcher-service
+    path: ../../charts/ai-matcher-service
+    releaseName: ai-matcher-service
+    version: 0.1.0
+    valuesInline:
+      image:
+        tag: dev
+      replicaCount: 1
