@@ -1,1 +1,9 @@
 // schema.prisma - placeholder or stub for chai-vc-platform
+
+model JobSwap {
+  id              String @id @default(uuid())
+  requesterId     String
+  recipientId     String
+  reputationStake Int
+  status          String
+}
