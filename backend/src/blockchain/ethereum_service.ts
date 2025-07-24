@@ -1,10 +1,10 @@
 import { NetworkVerifier, registerNetworkVerifier } from './cross_chain_claims';
 
-export const polkadotVerifier: NetworkVerifier = {
+export const ethereumVerifier: NetworkVerifier = {
   async verifyAddressOwnership(did: string, address: string, signature: string): Promise<boolean> {
     // Placeholder verification logic
-    return signature === `${did}:${address}:polkadot`;
+    return signature === `${did}:${address}:ethereum`;
   },
 };
 
-registerNetworkVerifier('polkadot', polkadotVerifier);
+registerNetworkVerifier('ethereum', ethereumVerifier);

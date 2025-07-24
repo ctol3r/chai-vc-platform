@@ -1,1 +1,3 @@
-// blockchain_integration.ts - placeholder or stub for chai-vc-platform
+export { registerNetworkVerifier, verifyCrossChainClaim } from './cross_chain_claims';
+export * from './ethereum_service';
+export * from './polkadot_service';
