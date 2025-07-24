@@ -1,0 +1,6 @@
+node_modules/
+dist/
+backend/node_modules/
+backend/dist/
+backend/package-lock.json
+backend/__tests__/*.js
