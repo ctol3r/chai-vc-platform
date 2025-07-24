@@ -1,1 +1,17 @@
-// ci.yml - placeholder or stub for chai-vc-platform
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run HIPAA/SOC 2 audit hooks
+        run: |
+          chmod +x scripts/audit_hook.sh
+          scripts/audit_hook.sh
