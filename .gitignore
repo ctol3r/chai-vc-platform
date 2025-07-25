@@ -1,0 +1,10 @@
+# Node
+node_modules/
+backend/node_modules/
+backend/dist/
+
+# Python
+**/__pycache__/
+
+# Misc
+*.log
