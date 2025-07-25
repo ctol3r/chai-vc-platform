@@ -1,1 +1,1 @@
-// match.py - placeholder or stub for chai-vc-platform
+# match.py - placeholder or stub for chai-vc-platform
