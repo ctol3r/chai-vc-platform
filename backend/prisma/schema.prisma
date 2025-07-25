@@ -1,1 +1,121 @@
-// schema.prisma - placeholder or stub for chai-vc-platform
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// User account within the platform
+model User {
+  id         String               @id @default(cuid())
+  email      String               @unique
+  name       String?
+  hashedPassword String?
+  createdAt  DateTime             @default(now())
+  updatedAt  DateTime             @updatedAt
+
+  credentials        Credential[]
+  organizations      OrganizationMember[]
+  verificationRequests VerificationRequest[] @relation("RequestingUser")
+  jobApplications    JobApplication[]
+}
+
+// Company or group that posts jobs and verifies credentials
+model Organization {
+  id          String               @id @default(cuid())
+  name        String
+  description String?
+  owner       User                 @relation(fields: [ownerId], references: [id])
+  ownerId     String
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+
+  members            OrganizationMember[]
+  jobs               Job[]
+  verificationRequests VerificationRequest[]
+}
+
+// Join table for users that belong to an organization
+model OrganizationMember {
+  id             String        @id @default(cuid())
+  user           User          @relation(fields: [userId], references: [id])
+  userId         String
+  organization   Organization  @relation(fields: [organizationId], references: [id])
+  organizationId String
+  role           String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@unique([userId, organizationId])
+}
+
+// Credential issued to a user
+model Credential {
+  id            String            @id @default(cuid())
+  user          User              @relation(fields: [userId], references: [id])
+  userId        String
+  type          String
+  data          Json
+  issuedBy      String
+  issueDate     DateTime
+  expiryDate    DateTime?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  verificationRequests VerificationRequest[]
+}
+
+// Job posting from an organization
+model Job {
+  id             String        @id @default(cuid())
+  organization   Organization  @relation(fields: [organizationId], references: [id])
+  organizationId String
+  title          String
+  description    String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  applications   JobApplication[]
+}
+
+// Link between a job and a user who applied
+model JobApplication {
+  id        String   @id @default(cuid())
+  job       Job      @relation(fields: [jobId], references: [id])
+  jobId     String
+  applicant User     @relation(fields: [userId], references: [id])
+  userId    String
+  status    ApplicationStatus @default(PENDING)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([jobId, userId])
+}
+
+// Request by an organization to verify a credential
+model VerificationRequest {
+  id             String             @id @default(cuid())
+  credential     Credential         @relation(fields: [credentialId], references: [id])
+  credentialId   String
+  organization   Organization       @relation(fields: [organizationId], references: [id])
+  organizationId String
+  requestedBy    User               @relation("RequestingUser", fields: [requestedById], references: [id])
+  requestedById  String
+  status         VerificationStatus @default(PENDING)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+}
+
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ApplicationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
