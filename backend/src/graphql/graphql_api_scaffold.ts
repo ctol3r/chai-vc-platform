@@ -1,1 +1,17 @@
-// graphql_api_scaffold.ts - placeholder or stub for chai-vc-platform
+import { ApolloServer } from 'apollo-server';
+import { PrismaClient } from '@prisma/client';
+import { typeDefs } from './typeDefs';
+import { resolvers } from './resolvers';
+
+const prisma = new PrismaClient();
+
+const server = new ApolloServer({
+  typeDefs,
+  resolvers,
+  context: () => ({ prisma }),
+});
+
+server.listen().then(({ url }) => {
+  /* eslint-disable no-console */
+  console.log(`Server ready at ${url}`);
+});
