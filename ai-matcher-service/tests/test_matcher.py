@@ -1,1 +1,4 @@
-// test_matcher.py - placeholder or stub for chai-vc-platform
+"""Minimal test placeholder for ai-matcher-service."""
+
+def test_placeholder():
+    assert True
