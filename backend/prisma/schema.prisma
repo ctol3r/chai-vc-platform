@@ -1,1 +1,16 @@
-// schema.prisma - placeholder or stub for chai-vc-platform
+// Prisma schema for chai-vc-platform
+// Using SQLite database stored in dev.db
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Credential {
+  id    Int    @id @default(autoincrement())
+  title String
+}

@@ -1,0 +1,23 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "main": "dist/server.js",
+  "license": "MIT",
+  "scripts": {
+    "dev": "ts-node src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "prisma:generate": "prisma generate"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "apollo-server-express": "^3.12.2",
+    "graphql": "^16.8.1",
+    "@prisma/client": "^5.10.2"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "ts-node": "^10.9.2",
+    "prisma": "^5.10.2"
+  }
+}
