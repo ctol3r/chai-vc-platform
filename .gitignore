@@ -1,0 +1,33 @@
+# Build artifacts
+build/
+dist/
+*.log
+
+# Node dependencies
+node_modules/
+
+# Environment files
+.env
+.env.*
+*.env
+
+# Python artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+venv/
+.envrc
+
+# OS metadata
+.DS_Store
+
+# IDE settings
+.vscode/
+.idea/
+
+# Coverage files
+coverage/
+
