@@ -1,0 +1,8 @@
+{
+  "name": "chai-vc-platform",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "test": "node --test backend/__tests__/cross_chain_did_resolver.test.js"
+  }
+}
