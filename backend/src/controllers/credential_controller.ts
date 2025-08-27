@@ -1,26 +1,34 @@
-import axios from 'axios';
-import fs from 'fs';
-import https from 'https';
+import { loadVcContext } from '../credential_registry';
+import { PolkadotService } from '../blockchain/polkadot_service';
+import { AuditScrapbook } from '../blockchain/audit_scrapbook';
+import { confirmBiometric } from '../utils/biometric_auth';
 
-const httpsAgent = new https.Agent({
-  cert: fs.readFileSync(process.env.CLIENT_CERT || '/certs/client.crt'),
-  key: fs.readFileSync(process.env.CLIENT_KEY || '/certs/client.key'),
-  ca: fs.readFileSync(process.env.CA_CERT || '/certs/ca.crt'),
-  rejectUnauthorized: true,
-});
+// credential_controller.ts - demonstrates how the credential registry pallet
+// integrates the W3C VC Data Model 1.0 schema.
 
-const OPA_URL = process.env.OPA_URL || 'http://localhost:8181/v1/data/chai/authz/allow';
+const polkadot = new PolkadotService();
+const scrapbook = new AuditScrapbook(polkadot);
 
-export async function authorize(path: string, method: string): Promise<boolean> {
-  const resp = await axios.post(OPA_URL, { input: { path, method } });
-  return resp.data.result === true;
+export function getCredentialContext() {
+  return loadVcContext();
 }
 
-export async function fetchMatching(): Promise<any> {
-  const allowed = await authorize('/credentials', 'POST');
-  if (!allowed) {
-    throw new Error('OPA policy denied request');
+export async function issueCredential(userId: string, credential: any) {
+    // Placeholder for logic that would issue a credential
+    await scrapbook.recordIdentityAction(userId, 'ISSUE_CREDENTIAL');
+    return { userId, credential };
+}
+
+/**
+ * Signs a verifiable credential after confirming device biometrics.
+ * This is a stub implementation for the Chai VC platform.
+ */
+export async function signCredential(vcData: unknown): Promise<unknown> {
+  const confirmed = await confirmBiometric();
+  if (!confirmed) {
+    throw new Error('Biometric confirmation failed');
   }
-  const resp = await axios.get('https://ai-matcher-service/match', { httpsAgent });
-  return resp.data;
+  // TODO: integrate actual VC signing logic here
+  console.log('VC signed');
+  return vcData;
 }

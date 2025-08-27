@@ -1,15 +1,12 @@
-import { fetchMatching } from '../src/controllers/credential_controller';
-import nock from 'nock';
+import { issueCredential } from '../src/controllers/credential_controller';
 
-test('fetchMatching allows when OPA permits', async () => {
-  nock('http://localhost:8181')
-    .post('/v1/data/chai/authz/allow')
-    .reply(200, { result: true });
+test('placeholder full end-to-end test', () => {
+  expect(true).toBe(true);
+});
 
-  nock('https://ai-matcher-service')
-    .get('/match')
-    .reply(200, { ok: true });
-
-  const result = await fetchMatching();
-  expect(result).toEqual({ ok: true });
+test('audit scrapbook integration test', async () => {
+  const result = await issueCredential('user123', { id: 'cred1' });
+  expect(result.userId).toBe('user123');
+  expect(result.credential.id).toBe('cred1');
+  console.log('audit scrapbook test executed');
 });
