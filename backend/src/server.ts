@@ -2,8 +2,11 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import { login } from './controllers/auth_controller';
 import { verifyToken } from './auth/jwt';
+import { router as verifierRouter } from './routes/verifier_routes';
 
 const app = express();
+const port = process.env.PORT || 3000;
+
 app.use(bodyParser.json());
 
 app.post('/login', login);
@@ -21,6 +24,12 @@ app.get('/protected', (req, res) => {
   } catch (err) {
     res.status(401).json({ message: 'Invalid token' });
   }
+});
+
+app.use('/api', verifierRouter);
+
+app.listen(port, () => {
+  console.log(`Server listening on port ${port}`);
 });
 
 export default app;
