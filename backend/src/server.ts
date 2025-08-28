@@ -1,9 +1,9 @@
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
 import { startApolloServer } from './graphql/graphql_api_scaffold';
+import app from './app';
 
 const prisma = new PrismaClient();
-const app = express();
 
 async function main() {
   await startApolloServer(app, prisma);

@@ -1,16 +1,18 @@
-// Prisma schema for chai-vc-platform
-// Using SQLite database stored in dev.db
+// Prisma schema for Chai VC Platform
+// Defines a simple Credential model used in GraphQL resolvers
+
+generator client {
+  provider = "prisma-client-js"
+}
 
 datasource db {
   provider = "sqlite"
   url      = "file:./dev.db"
 }
 
-generator client {
-  provider = "prisma-client-js"
-}
-
 model Credential {
-  id    Int    @id @default(autoincrement())
-  title String
+  id        String   @id @default(cuid())
+  name      String
+  issuer    String
+  issuedAt  DateTime @default(now())
 }
