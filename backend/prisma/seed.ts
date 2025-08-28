@@ -23,8 +23,8 @@ async function main() {
 
   await prisma.credential.createMany({
     data: [
-      { name: 'Nursing License', userId: alice.id },
-      { name: 'Pharmacy Certification', userId: bob.id }
+      { name: 'Nursing License', issuer: 'State Board of Nursing', userId: alice.id },
+      { name: 'Pharmacy Certification', issuer: 'Board of Pharmacy', userId: bob.id }
     ]
   })
 
