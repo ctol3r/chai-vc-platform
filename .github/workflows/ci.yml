@@ -22,6 +22,10 @@ jobs:
             backend:
               - 'backend/**'
               - '.github/workflows/**'
+            substrate:
+              - 'substrate/**'
+              - 'Cargo.toml'
+              - 'rust-toolchain.toml'
             ai:
               - 'ai-matcher-service/**'
               - '.github/workflows/**'
@@ -97,3 +101,21 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y make
       - name: Full suite
         run: make test
+
+  rust-bench-check:
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.substrate == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          components: rustfmt, clippy
+          override: true
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+      - name: Bench compile check
+        run: cargo check -p node-example --features runtime-benchmarks
