@@ -1,11 +1,13 @@
 import express from 'express';
 import bodyParser from 'body-parser';
+import { PrismaClient } from '@prisma/client';
 import { login } from './controllers/auth_controller';
 import { verifyToken } from './auth/jwt';
 import { router as verifierRouter } from './routes/verifier_routes';
+import { startApolloServer } from './graphql/graphql_api_scaffold';
+import app from './app';
 
-const app = express();
-const port = process.env.PORT || 3000;
+const prisma = new PrismaClient();
 
 app.use(bodyParser.json());
 
@@ -28,8 +30,18 @@ app.get('/protected', (req, res) => {
 
 app.use('/api', verifierRouter);
 
-app.listen(port, () => {
-  console.log(`Server listening on port ${port}`);
+async function main() {
+  await startApolloServer(app, prisma);
+
+  const port = process.env.PORT || 4000;
+  app.listen(port, () => {
+    console.log(`Server ready at http://localhost:${port}/graphql`);
+  });
+}
+
+main().catch((e) => {
+  console.error(e);
+  process.exit(1);
 });
 
 export default app;
