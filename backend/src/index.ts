@@ -1,20 +1,24 @@
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
 import { startApolloServer } from './graphql/graphql_api_scaffold';
-import app from './app';
 
+const app = express();
 const prisma = new PrismaClient();
 
-async function main() {
-  await startApolloServer(app, prisma);
+// Parse JSON request bodies
+app.use(express.json());
 
+export default app;
+
+export async function startServer() {
+  await startApolloServer(app, prisma);
   const port = process.env.PORT || 4000;
   app.listen(port, () => {
     console.log(`Server ready at http://localhost:${port}/graphql`);
   });
 }
 
-main().catch((e) => {
-  console.error(e);
-  process.exit(1);
-});
+// If this module is executed directly, start the server
+if (require.main === module) {
+  startServer();
+}

@@ -7,10 +7,12 @@
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
     "moduleResolution": "node"
   },
   "include": [
     "src/**/*",
-    "__tests__/**/*"
-  ]
+    "prisma/seed.ts"
+  ],
+  "exclude": ["__tests__"]
 }
