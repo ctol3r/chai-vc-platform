@@ -1,0 +1,15 @@
+{
+  "lastUpdated": "2025-01-01T00:00:00Z",
+  "soc2": {
+    "status": "in_progress",
+    "notes": "Control mapping draft complete; evidence collection ongoing"
+  },
+  "gdpr": {
+    "status": "baseline",
+    "notes": "DPA templates prepared; ROPA drafted"
+  },
+  "disasterRecovery": {
+    "status": "green",
+    "notes": "Failover drill script available; backup scripts scaffolded"
+  }
+}
