@@ -18,13 +18,31 @@ model User {
   jobs        Job[]
 }
 
+enum CredentialStatus {
+  REQUESTED
+  VERIFIED
+  REVOKED
+  EXPIRED
+}
+
 model Credential {
-  id       Int      @id @default(autoincrement())
-  name     String
-  issuer   String
-  issuedAt DateTime @default(now())
-  user     User     @relation(fields: [userId], references: [id])
-  userId   Int
+  id         Int              @id @default(autoincrement())
+  name       String
+  issuer     String           // DID or issuer identifier (non-PII)
+  issuedAt   DateTime         @default(now())
+  status     CredentialStatus @default(REQUESTED)
+  expiresAt  DateTime?
+  hash       String           @unique
+  // Encrypted payload fields (Base64-encoded). No PII in clear text.
+  payloadEnc String
+  iv         String
+  alg        String           // e.g., "AES-256-GCM"
+  user       User?            @relation(fields: [userId], references: [id])
+  userId     Int?
+
+  @@index([status], map: "idx_credential_status")
+  @@index([issuedAt], map: "idx_credential_issuedAt")
+  @@index([issuer], map: "idx_credential_issuer")
 }
 
 model Job {
