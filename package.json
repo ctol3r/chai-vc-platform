@@ -12,7 +12,7 @@
   "license": "ISC",
   "type": "module",
   "devDependencies": {
-    "@nomicfoundation/hardhat-ethers": "^4",
+    "@nomicfoundation/hardhat-ethers": "^3.1.0",
     "ethers": "^6",
     "hardhat": "^3",
     "solc": "^0.8.20",
