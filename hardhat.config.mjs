@@ -1,6 +1,3 @@
-// hardhat.config.mjs (ESM)
-import "@nomicfoundation/hardhat-toolbox";
-
-export default {
-  solidity: "0.8.20"
-};
+import "@nomicfoundation/hardhat-ethers";
+import "@nomicfoundation/hardhat-chai-matchers";
+export default { solidity: "0.8.20" };
