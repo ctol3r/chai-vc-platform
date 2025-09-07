@@ -22,3 +22,5 @@ cache/
 # Python/Node virtual envs
 **/.venv/
 .venv/
+!package-lock.json
+frontend/tsconfig.tsbuildinfo
