@@ -1,1 +1,1 @@
-Read the latest CI failure logs (jest/pytest/build). Identify first failure, root cause, and propose a minimal patch. Show only the diffs. Add/adjust tests if needed.
+Read recent test/build output. Identify the first failure and propose the smallest patch to fix it. Show only diffs; wait for approval before applying.

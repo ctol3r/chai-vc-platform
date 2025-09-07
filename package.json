@@ -12,9 +12,13 @@
   "license": "ISC",
   "type": "module",
   "devDependencies": {
-    "@nomiclabs/hardhat-ethers": "^2.2.3",
-    "hardhat": "^2.25.0",
-    "solc": "^0.8.20"
+    "@nomicfoundation/hardhat-ethers": "^4",
+    "@nomicfoundation/hardhat-toolbox": "^6",
+    "ethers": "^6",
+    "hardhat": "^3",
+    "solc": "^0.8.20",
+    "ts-node": "^10",
+    "typescript": "^5"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^5.3.0"
