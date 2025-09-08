@@ -1,15 +1,8 @@
-import '@nomicfoundation/hardhat-toolbox';
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
+import "@nomicfoundation/hardhat-ethers";
+import "@nomicfoundation/hardhat-chai-matchers";
 
+/** @type import("hardhat/config").HardhatUserConfig */
 export default {
-  solidity: {
-    compilers: [
-      {
-        version: '0.8.20',
-        // Use solc-js from node_modules to avoid downloads
-        path: require.resolve('solc'),
-      },
-    ],
-  },
+  solidity: "0.8.20",
+  paths: { tests: "./test" }
 };
