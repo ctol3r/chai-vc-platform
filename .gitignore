@@ -18,3 +18,9 @@ cache/
 /target/
 **/target/
 /substrate/pallet-state-board/target/
+
+# Python/Node virtual envs
+**/.venv/
+.venv/
+!package-lock.json
+frontend/tsconfig.tsbuildinfo
