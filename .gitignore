@@ -21,3 +21,4 @@ cache/
 backend/.venv
 ai-matcher-service/.venv
 frontend/.next
+frontend/tsconfig.tsbuildinfo
