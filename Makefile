@@ -44,3 +44,14 @@ backend-setup:
 backend-test:
 	cd backend && .venv/bin/python -m pytest -q
 # ---- end overrides ----
+
+# ---- reliable venv-aware targets (overrides) ----
+.PHONY: ai-setup ai-test backend-setup backend-test
+
+ai-test: ai-setup
+	# Run pytest via the venv interpreter (no fragile activation)
+	cd ai-matcher-service && .venv/bin/python -m pytest -q
+
+backend-test: backend-setup
+	cd backend && .venv/bin/python -m pytest -q
+# ---- end overrides ----
