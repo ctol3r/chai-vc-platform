@@ -55,3 +55,26 @@ ai-test: ai-setup
 backend-test: backend-setup
 	cd backend && .venv/bin/python -m pytest -q
 # ---- end overrides ----
+
+# Use brewed python for venv creation; call tools via venv interpreter; enforce order.
+.PHONY: ai-setup ai-test backend-setup backend-test
+
+ai-setup:
+	cd ai-matcher-service && \
+		/opt/homebrew/bin/python3 -m venv .venv && \
+		.venv/bin/python -m pip install -U pip && \
+		( [ -f requirements.txt ] && .venv/bin/python -m pip install -r requirements.txt \
+		  || .venv/bin/python -m pip install -U pytest numpy pandas scikit-learn )
+
+ai-test: ai-setup
+	cd ai-matcher-service && .venv/bin/python -m pytest -q
+
+backend-setup:
+	cd backend && \
+		/opt/homebrew/bin/python3 -m venv .venv && \
+		.venv/bin/python -m pip install -U pip && \
+		( [ -f requirements.txt ] && .venv/bin/python -m pip install -r requirements.txt \
+		  || .venv/bin/python -m pip install -U pytest )
+
+backend-test: backend-setup
+	cd backend && .venv/bin/python -m pytest -q
