@@ -1,4 +1,4 @@
-import '@nomicfoundation/hardhat-toolbox';
+import '@nomiclabs/hardhat-ethers';
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 

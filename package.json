@@ -12,8 +12,8 @@
   "license": "ISC",
   "type": "module",
   "devDependencies": {
-    "@nomicfoundation/hardhat-toolbox": "^3.0.0",
     "@nomiclabs/hardhat-ethers": "^2.2.3",
+    "chai": "^4.3.10",
     "ethers": "^5.8.0",
     "hardhat": "^2.25.0",
     "solc": "^0.8.20"
