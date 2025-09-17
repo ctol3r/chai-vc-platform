@@ -18,3 +18,7 @@ cache/
 /target/
 **/target/
 /substrate/pallet-state-board/target/
+backend/.venv
+ai-matcher-service/.venv
+frontend/.next
+frontend/tsconfig.tsbuildinfo
