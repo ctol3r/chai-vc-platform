@@ -23,8 +23,9 @@ model Credential {
   name     String
   issuer   String
   issuedAt DateTime @default(now())
-  user     User     @relation(fields: [userId], references: [id])
-  userId   Int
+  status   CredentialStatus @default(REQUESTED)
+  user     User?    @relation(fields: [userId], references: [id])
+  userId   Int?
 }
 
 model Job {
@@ -32,4 +33,19 @@ model Job {
   title  String
   user   User   @relation(fields: [userId], references: [id])
   userId Int
+}
+
+enum CredentialStatus {
+  REQUESTED
+  VERIFIED
+  REVOKED
+}
+
+model DidDocument {
+  id          Int     @id @default(autoincrement())
+  did         String  @unique
+  controller  String
+  keys        String? // JSON-encoded
+  services    String? // JSON-encoded
+  deactivated Boolean @default(false)
 }

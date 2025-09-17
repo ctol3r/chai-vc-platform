@@ -3,6 +3,16 @@ import { PrismaClient } from '@prisma/client';
 import { startApolloServer } from './graphql/graphql_api_scaffold';
 
 const app = express();
+
+// Minimal CORS to enable frontend dev
+app.use((req, res, next) => {
+  const origin = process.env.CORS_ORIGIN || '*';
+  res.header('Access-Control-Allow-Origin', origin);
+  res.header('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  if (req.method === 'OPTIONS') return res.sendStatus(204);
+  next();
+});
 const prisma = new PrismaClient();
 
 // Parse JSON request bodies

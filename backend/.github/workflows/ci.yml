@@ -1,0 +1,19 @@
+name: CI
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main, feat/**, fix/**, chore/** ]
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - name: Backend deps
+        run: cd backend && npm ci
+      - name: Prisma validate
+        run: cd backend && npx prisma validate
+      - name: Unit tests
+        run: cd backend && npm test --silent

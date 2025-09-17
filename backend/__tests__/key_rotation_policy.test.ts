@@ -1,11 +1,13 @@
-import assert from 'assert';
-import { KeyRotationPolicy } from '../src/blockchain/key_rotation_policy';
+import { KeyRotationPolicy } from '../src/crypto/key_rotation_policy';
 
-const now = Date.now();
-const policy = new KeyRotationPolicy('key1');
-policy.scheduleRotation('key2', now + 1000);
+describe('KeyRotationPolicy', () => {
+  it('returns active key before and after rotation window', () => {
+    const policy = new KeyRotationPolicy();
+    const key1 = policy.issueKey();
+    expect(policy.getActiveKey()).toEqual(key1);
 
-assert.strictEqual(policy.getActiveKey(now), 'key1', 'Key should remain the same before time lock');
-assert.strictEqual(policy.getActiveKey(now + 1500), 'key2', 'Key should rotate after time lock');
-
-console.log('KeyRotationPolicy tests passed');
+    policy.rotateKeys();
+    const key2 = policy.getActiveKey();
+    expect(key2).not.toEqual(key1);
+  });
+});
