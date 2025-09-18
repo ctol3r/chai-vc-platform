@@ -1,0 +1,10 @@
+[workspace]
+members = [
+  "pallets/did",
+  "pallets/credential",
+  "pallet-state-board"
+]
+resolver = "2"
+
+[workspace.dependencies]
+schnorrkel = "0.9.1"
