@@ -1,5 +1,7 @@
-import { ethers } from "hardhat";
+import hardhat from "hardhat";
 import { expect } from "chai";
+
+const { ethers } = hardhat;
 
 describe("MatchingPool", function () {
   it("allocates sponsor funds proportionally to unique contributors", async () => {
@@ -9,13 +11,11 @@ describe("MatchingPool", function () {
     const pool = await MatchingPool.deploy();
     await pool.deployed();
 
-    // sponsor deposits 10 ether
-    await pool.connect(sponsor).addSponsorFunds({ value: ethers.parseEther("10") });
+    await pool.connect(sponsor).addSponsorFunds({ value: ethers.utils.parseEther("10") });
 
-    // contributions
-    await pool.connect(alice).contribute(projectA.address, { value: ethers.parseEther("1") });
-    await pool.connect(bob).contribute(projectA.address, { value: ethers.parseEther("1") });
-    await pool.connect(charlie).contribute(projectB.address, { value: ethers.parseEther("1") });
+    await pool.connect(alice).contribute(projectA.address, { value: ethers.utils.parseEther("1") });
+    await pool.connect(bob).contribute(projectA.address, { value: ethers.utils.parseEther("1") });
+    await pool.connect(charlie).contribute(projectB.address, { value: ethers.utils.parseEther("1") });
 
     await pool.allocate();
 
@@ -28,13 +28,10 @@ describe("MatchingPool", function () {
     const balAfterA = await ethers.provider.getBalance(projectA.address);
     const balAfterB = await ethers.provider.getBalance(projectB.address);
 
-    const receivedA = balAfterA - balBeforeA;
-    const receivedB = balAfterB - balBeforeB;
+    const receivedA = balAfterA.sub(balBeforeA);
+    const receivedB = balAfterB.sub(balBeforeB);
 
-    // Each project has 2 unique contributors: projectA has 2, projectB has 1
-    // Total unique contributors = 3, sponsor funds = 10 ether
-    // projectA match = 10 * 2/3 = 6.6666.., projectB match = 10 * 1/3 = 3.3333..
-    expect(receivedA).to.be.closeTo(ethers.parseEther("8"), ethers.parseEther("0.1"));
-    expect(receivedB).to.be.closeTo(ethers.parseEther("4"), ethers.parseEther("0.1"));
+    expect(receivedA).to.be.closeTo(ethers.utils.parseEther("8"), ethers.utils.parseEther("0.1"));
+    expect(receivedB).to.be.closeTo(ethers.utils.parseEther("4"), ethers.utils.parseEther("0.1"));
   });
 });

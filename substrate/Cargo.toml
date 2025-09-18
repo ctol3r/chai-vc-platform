@@ -1,0 +1,7 @@
+[workspace]
+members = [
+  "pallets/did",
+  "pallets/credential",
+  "pallet-state-board",
+]
+resolver = "2"
