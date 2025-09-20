@@ -1,13 +1,21 @@
 import { getPolkadotApi, getSigner } from "@/blockchain/api";
 
+function assertAdmin(ctx: any) {
+  if (!ctx.user?.roles?.includes("admin")) {
+    throw new Error("Unauthorized: admin role required");
+  }
+}
+
 export const Mutation = {
   async authorizeIssuer(_: any, { account }: { account: string }, ctx: any) {
+    assertAdmin(ctx);
     const api = await getPolkadotApi(); const signer = await getSigner(ctx);
     const unsub = await api.tx.credentialPallet.authorizeIssuer(account)
       .signAndSend(signer, ({ status }) => { if (status.isInBlock || status.isFinalized) unsub(); });
     return true;
   },
   async deauthorizeIssuer(_: any, { account }: { account: string }, ctx: any) {
+    assertAdmin(ctx);
     const api = await getPolkadotApi(); const signer = await getSigner(ctx);
     const unsub = await api.tx.credentialPallet.deauthorizeIssuer(account)
       .signAndSend(signer, ({ status }) => { if (status.isInBlock || status.isFinalized) unsub(); });

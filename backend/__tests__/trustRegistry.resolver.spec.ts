@@ -12,12 +12,14 @@ jest.mock("../src/blockchain/api", () => ({
 }));
 
 describe("trust registry resolvers", () => {
+  const mockAdminContext = { user: { roles: ["admin"] } };
+
   it("authorizeIssuer returns true", async () => {
-    const ok = await Mutation.authorizeIssuer({}, { account: "5F..." }, {});
+    const ok = await Mutation.authorizeIssuer({}, { account: "5F..." }, mockAdminContext);
     expect(ok).toBe(true);
   });
   it("deauthorizeIssuer returns true", async () => {
-    const ok = await Mutation.deauthorizeIssuer({}, { account: "5F..." }, {});
+    const ok = await Mutation.deauthorizeIssuer({}, { account: "5F..." }, mockAdminContext);
     expect(ok).toBe(true);
   });
 });
