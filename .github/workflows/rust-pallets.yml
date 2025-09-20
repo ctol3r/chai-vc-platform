@@ -1,0 +1,16 @@
+name: Rust Pallets
+on:
+  pull_request:
+    paths:
+      - 'substrate/**'
+      - '!**/*.md'
+jobs:
+  pallets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with: { toolchain: stable, components: rustfmt, clippy }
+      - uses: Swatinem/rust-cache@v2
+      - name: Credential pallet tests
+        run: cd substrate/pallets/credential && cargo test
