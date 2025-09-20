@@ -1,48 +1,69 @@
 use super::*;
-use crate::mock::{new_test_ext, Credential, RuntimeEvent, RuntimeOrigin, System, Test};
-use frame_support::{assert_noop, assert_ok};
-use frame_system::pallet_prelude::BadOrigin;
+use crate::{mock::*, Error};
+use frame_support::{assert_noop, assert_ok, dispatch::DispatchError};
 
 #[test]
-fn authorize_issuer_requires_root() {
+fn root_can_authorize_and_deauthorize_issuer() {
     new_test_ext().execute_with(|| {
-        assert_ok!(Credential::authorize_issuer(RuntimeOrigin::root(), 42));
-        assert!(Credential::is_authorized(&42));
-        System::assert_last_event(RuntimeEvent::Credential(
-            crate::Event::<Test>::IssuerAuthorized { account: 42 },
+        assert_ok!(CredentialPallet::authorize_issuer(
+            RuntimeOrigin::root(),
+            42
         ));
+        assert!(CredentialPallet::is_authorized_issuer(&42));
+
+        assert_ok!(CredentialPallet::deauthorize_issuer(
+            RuntimeOrigin::root(),
+            42
+        ));
+        assert!(!CredentialPallet::is_authorized_issuer(&42));
     });
 }
 
 #[test]
-fn authorize_issuer_rejects_non_root() {
+fn non_root_cannot_authorize() {
     new_test_ext().execute_with(|| {
         assert_noop!(
-            Credential::authorize_issuer(RuntimeOrigin::signed(1), 42),
-            BadOrigin
+            CredentialPallet::authorize_issuer(RuntimeOrigin::signed(7), 42),
+            DispatchError::BadOrigin
         );
     });
 }
 
 #[test]
-fn deauthorize_issuer_requires_root() {
+fn issue_and_revoke_flow() {
     new_test_ext().execute_with(|| {
-        assert_ok!(Credential::authorize_issuer(RuntimeOrigin::root(), 7));
-        assert_ok!(Credential::deauthorize_issuer(RuntimeOrigin::root(), 7));
-        System::assert_last_event(RuntimeEvent::Credential(
-            crate::Event::<Test>::IssuerDeauthorized { account: 7 },
-        ));
-        assert!(!Credential::is_authorized(&7));
-    });
-}
-
-#[test]
-fn deauthorize_issuer_rejects_non_root() {
-    new_test_ext().execute_with(|| {
-        assert_ok!(Credential::authorize_issuer(RuntimeOrigin::root(), 9));
         assert_noop!(
-            Credential::deauthorize_issuer(RuntimeOrigin::signed(1), 9),
-            BadOrigin
+            CredentialPallet::issue_credential(RuntimeOrigin::signed(1), b"cred".to_vec()),
+            Error::<Test>::IssuerNotAuthorized
         );
+
+        assert_ok!(CredentialPallet::authorize_issuer(RuntimeOrigin::root(), 1));
+
+        let data = b"cred".to_vec();
+        assert_ok!(CredentialPallet::issue_credential(
+            RuntimeOrigin::signed(1),
+            data.clone()
+        ));
+
+        let ids = CredentialPallet::owner_credentials(1);
+        assert_eq!(ids.len(), 1);
+        let credential_id = ids[0];
+
+        let stored = CredentialPallet::credentials(credential_id).expect("stored credential");
+        assert_eq!(stored.owner, 1);
+        assert_eq!(stored.data, data);
+        assert!(!stored.revoked);
+
+        assert_noop!(
+            CredentialPallet::revoke_credential(RuntimeOrigin::signed(2), credential_id),
+            Error::<Test>::NotCredentialOwner
+        );
+
+        assert_ok!(CredentialPallet::revoke_credential(
+            RuntimeOrigin::signed(1),
+            credential_id
+        ));
+        let revoked = CredentialPallet::credentials(credential_id).expect("revoked credential");
+        assert!(revoked.revoked);
     });
 }

@@ -1,8 +1,9 @@
+#![cfg(test)]
+
 use crate as pallet_credential;
 use frame_support::{parameter_types, traits::Everything};
-use frame_system::{self as system, EnsureRoot};
+use frame_system as system;
 use sp_core::H256;
-use sp_io::TestExternalities;
 use sp_runtime::{testing::Header, traits::IdentityLookup};
 
 type UncheckedExtrinsic = system::mocking::MockUncheckedExtrinsic<Test>;
@@ -14,13 +15,13 @@ frame_support::construct_runtime!(
         NodeBlock = Block,
         UncheckedExtrinsic = UncheckedExtrinsic,
     {
-        System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
-        Credential: pallet_credential::{Pallet, Call, Storage, Event<T>},
+        System: frame_system,
+        CredentialPallet: pallet_credential,
     }
 );
 
 parameter_types! {
-    pub const BlockHashCount: u64 = 250;
+    pub const BlockHashCount: u64 = 240;
 }
 
 impl system::Config for Test {
@@ -52,10 +53,12 @@ impl system::Config for Test {
 
 impl pallet_credential::Config for Test {
     type Event = RuntimeEvent;
-    type TrustRegistryOrigin = EnsureRoot<Self::AccountId>;
+    type TrustRegistryOrigin = frame_system::EnsureRoot<u64>;
 }
 
-pub fn new_test_ext() -> TestExternalities {
+pub use CredentialPallet as Credential;
+
+pub fn new_test_ext() -> sp_io::TestExternalities {
     let storage = system::GenesisConfig::default()
         .build_storage::<Test>()
         .expect("Frame system builds storage");
