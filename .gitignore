@@ -31,3 +31,10 @@ batch-pr.sh
 frontend/.next/
 # local GH protection snapshots
 protection*.json
+
+# Build/locals
+frontend/.next/
+node_modules/
+*.env
+.env*
+.DS_Store
