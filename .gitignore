@@ -26,3 +26,8 @@ batch-pr.sh
 
 # local agent settings
 .claude/
+
+# Next.js build
+frontend/.next/
+# local GH protection snapshots
+protection*.json

@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { useMutation, gql } from "@apollo/client";
+import { useMutation } from "@apollo/client/react";
+import { gql } from "@apollo/client";
 
 const AUTH = gql`mutation($account:String!){authorizeIssuer(account:$account)}`;
 const DEAUTH = gql`mutation($account:String!){deauthorizeIssuer(account:$account)}`;
