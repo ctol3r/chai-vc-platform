@@ -1,9 +1,7 @@
 [workspace]
-members = [
-  "pallets/credential"
-]
+members = ["pallets/credential"]
 resolver = "2"
 
 [patch.crates-io]
-# Force a single schnorrkel across the workspace to avoid MiniSecretKey clashes
-schnorrkel = { version = "0.11.4", default-features = false }
+# Pin exactly one schnorrkel to stop MultiSecretKey clashes
+schnorrkel = { version = "=0.11.4" }
