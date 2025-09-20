@@ -1,5 +1,7 @@
-import { ApiPromise, WsProvider, SubmittableResult } from '@polkadot/api';
-import { KeyringPair } from '@polkadot/keyring/types';
+import { ApiPromise, SubmittableResult, WsProvider } from '@polkadot/api';
+import { Keyring } from '@polkadot/keyring';
+import type { SubmittableExtrinsic } from '@polkadot/api/types';
+import type { KeyringPair } from '@polkadot/keyring/types';
 import { KeyRotationPolicy } from './key_rotation_policy';
 
 export interface ErasureRecord {
@@ -20,9 +22,75 @@ export interface AuditRecord {
 export class PolkadotService {
   private api: ApiPromise | null = null;
   private keyPolicy: KeyRotationPolicy;
+  private adminSigner: KeyringPair | null = null;
 
   constructor(initialKey?: string) {
     this.keyPolicy = new KeyRotationPolicy(initialKey || 'default-key');
+  }
+
+  private async ensureApi(): Promise<ApiPromise | null> {
+    if (!this.api) {
+      const endpoint = process.env.POLKADOT_WS_ENDPOINT || 'ws://127.0.0.1:9944';
+      try {
+        await this.connect(endpoint);
+      } catch (error) {
+        console.error('Failed to connect to Polkadot endpoint', error);
+        return null;
+      }
+    }
+    return this.api;
+  }
+
+  private async ensureAdminSigner(): Promise<KeyringPair> {
+    if (this.adminSigner) {
+      return this.adminSigner;
+    }
+    const keyring = new Keyring({ type: 'sr25519' });
+    const seed = process.env.TRUST_REGISTRY_ADMIN_SEED || '//Alice';
+    this.adminSigner = keyring.addFromUri(seed);
+    return this.adminSigner;
+  }
+
+  private async submitAndFinalize(
+    api: ApiPromise,
+    tx: SubmittableExtrinsic<'promise', SubmittableResult>,
+    signer: KeyringPair
+  ): Promise<void> {
+    try {
+      const result = await tx.signAndSend(signer);
+      if (result.dispatchError) {
+        if (result.dispatchError.isModule) {
+          const meta = api.registry.findMetaError(result.dispatchError.asModule);
+          throw new Error(`Extrinsic failed: ${meta.section}.${meta.name}`);
+        }
+        throw new Error(result.dispatchError.toString());
+      }
+      if (!(result.status.isFinalized || result.status.isInBlock)) {
+        console.warn('Extrinsic submitted but not yet confirmed');
+      }
+    } catch (error) {
+      throw error instanceof Error ? error : new Error(String(error));
+    }
+  }
+
+  async authorizeIssuer(account: string): Promise<void> {
+    const api = await this.ensureApi();
+    if (!api) {
+      throw new Error('Polkadot API not connected');
+    }
+    const signer = await this.ensureAdminSigner();
+    const tx = api.tx.credentialPallet.authorizeIssuer(account);
+    await this.submitAndFinalize(api, tx, signer);
+  }
+
+  async deauthorizeIssuer(account: string): Promise<void> {
+    const api = await this.ensureApi();
+    if (!api) {
+      throw new Error('Polkadot API not connected');
+    }
+    const signer = await this.ensureAdminSigner();
+    const tx = api.tx.credentialPallet.deauthorizeIssuer(account);
+    await this.submitAndFinalize(api, tx, signer);
   }
 
   /** Connect to a chain endpoint using WebSockets. */
