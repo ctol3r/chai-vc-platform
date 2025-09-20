@@ -2,6 +2,7 @@
 
 use frame_support::{dispatch::DispatchResult, pallet_prelude::*, traits::EnsureOrigin};
 use frame_system::pallet_prelude::*;
+use sp_runtime::traits::Hash;
 use sp_std::vec::Vec;
 
 #[frame_support::pallet]
@@ -10,8 +11,9 @@ pub mod pallet {
 
     #[pallet::config]
     pub trait Config: frame_system::Config {
-        type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+        type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
         type TrustRegistryOrigin: EnsureOrigin<Self::RuntimeOrigin>;
+        type MaxRevocationReason: Get<u32>;
     }
 
     #[pallet::pallet]
@@ -24,10 +26,12 @@ pub mod pallet {
 
     #[pallet::storage]
     #[pallet::getter(fn credentials)]
+    #[pallet::unbounded]
     pub type Credentials<T: Config> = StorageMap<_, Blake2_128Concat, T::Hash, Credential<T>>;
 
     #[pallet::storage]
     #[pallet::getter(fn owner_credentials)]
+    #[pallet::unbounded]
     pub type OwnerCredentials<T: Config> =
         StorageMap<_, Blake2_128Concat, T::AccountId, Vec<T::Hash>, ValueQuery>;
 
@@ -135,7 +139,8 @@ pub mod pallet {
         }
     }
 
-    #[derive(Encode, Decode, Clone, PartialEq, Eq, TypeInfo, MaxEncodedLen)]
+    #[derive(Encode, Decode, Clone, PartialEq, Eq, TypeInfo)]
+    #[scale_info(skip_type_params(T))]
     pub struct Credential<T: Config> {
         pub owner: T::AccountId,
         pub data: Vec<u8>,
@@ -148,3 +153,5 @@ mod mock;
 
 #[cfg(test)]
 mod tests;
+
+pub use self::pallet::*;
