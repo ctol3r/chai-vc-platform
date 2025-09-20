@@ -1,16 +1,37 @@
 name: Rust Pallets
+
 on:
-  pull_request:
-    paths:
-      - 'substrate/**'
-      - '!**/*.md'
+  pull_request: {}  # always trigger so the required context appears
+
 jobs:
   pallets:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      # Detect changed paths
+      - uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            substrate:
+              - 'substrate/**'
+
       - uses: dtolnay/rust-toolchain@stable
-        with: { toolchain: stable, components: rustfmt, clippy }
+        if: steps.changes.outputs.substrate == 'true'
+        with:
+          toolchain: stable
+          components: rustfmt, clippy
+
       - uses: Swatinem/rust-cache@v2
+        if: steps.changes.outputs.substrate == 'true'
+
       - name: Credential pallet tests
-        run: cd substrate/pallets/credential && cargo test
+        if: steps.changes.outputs.substrate == 'true'
+        run: |
+          cd substrate/pallets/credential
+          cargo test
+
+      - name: No substrate changes; skipping cargo
+        if: steps.changes.outputs.substrate != 'true'
+        run: echo "No substrate changes in this PR. Reporting success."
