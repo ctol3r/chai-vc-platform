@@ -1,0 +1,32 @@
+name: JS Tests
+
+on:
+  pull_request:
+
+jobs:
+  jest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - name: Detect frontend changes
+        uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            frontend:
+              - frontend/**
+      - name: Install & test
+        if: steps.changes.outputs.frontend == 'true'
+        run: |
+          cd frontend
+          npm ci || npm install
+          npm test -w || npm run test
+      - name: No frontend changes; skipping
+        if: steps.changes.outputs.frontend != 'true'
+        run: echo "No frontend changes in this PR."
