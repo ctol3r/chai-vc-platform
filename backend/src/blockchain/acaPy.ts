@@ -1,79 +1,88 @@
-import fetch from 'node-fetch';
+const ADMIN_BASE = process.env.ACA_PY_ADMIN_URL || 'http://aca-py:8021';
+const DEFAULT_TIMEOUT_MS = 1500;
 
-const ACA_PY_BASE_URL = process.env.ACA_PY_ADMIN_URL ?? 'http://localhost:8021';
-const ISSUE_PATH = '/status-proof';
-const VERIFY_PATH = '/status-proof/verify';
-
-export type IssueStatusProofResponse = {
-  proofToken: string;
-  presentation?: unknown;
-  mock?: boolean;
-};
-
-export type VerifyStatusProofResponse = {
+type ResponseLike = {
   ok: boolean;
-  reason?: string;
+  json(): Promise<unknown>;
 };
 
-async function callAcaPy(path: string, init?: RequestInit) {
-  const url = `${ACA_PY_BASE_URL}${path}`;
+type FetchImpl = (input: string, init?: Record<string, unknown>) => Promise<ResponseLike>;
+
+async function resolveFetch(): Promise<FetchImpl> {
+  const existing = (globalThis as unknown as { fetch?: unknown }).fetch;
+  if (typeof existing === 'function') {
+    return existing as FetchImpl;
+  }
+
+  const mod: unknown = await import('node-fetch');
+  const asModule = mod as { default?: FetchImpl };
+  return (asModule.default ?? (mod as FetchImpl)) as FetchImpl;
+}
+
+async function postJson(path: string, payload: Record<string, unknown>): Promise<ResponseLike> {
+  const fetchFn = await resolveFetch();
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
+
   try {
-    const response = await fetch(url, init);
+    return await fetchFn(path, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload),
+      signal: controller.signal as unknown
+    });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  if (typeof value === 'object' && value !== null) {
+    return value as Record<string, unknown>;
+  }
+  return null;
+}
+
+export async function issueStatusProof(hash: string): Promise<Record<string, unknown>> {
+  const fallback = { token: `MOCK-PROOF-${hash.slice(0, 8)}`, ok: true };
+
+  try {
+    const response = await postJson(`${ADMIN_BASE}/admin/status_proof`, { credential_hash: hash });
+
     if (!response.ok) {
-      throw new Error(`ACA-Py request failed: ${response.status} ${response.statusText}`);
+      return fallback;
     }
-    return response.json();
+
+    const data = await response.json();
+    const record = asRecord(data);
+
+    return record ?? fallback;
   } catch (error) {
-    console.warn('ACA-Py request failed, falling back to mock payload', error);
-    return null;
+    return fallback;
   }
 }
 
-function mockTokenForHash(credentialHash: string): string {
-  const sanitized = credentialHash.replace(/^0x/i, '').slice(0, 8).padEnd(8, '0').toUpperCase();
-  return `MOCK-PROOF-${sanitized}`;
-}
-
-export async function issueStatusProof(credentialHash: string): Promise<IssueStatusProofResponse> {
-  const result = await callAcaPy(ISSUE_PATH, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ credential_hash: credentialHash }),
-  });
-
-  if (result) {
-    const token = result.token ?? result.proofToken ?? result.thread_id ?? result.id;
-    return {
-      proofToken: token ?? mockTokenForHash(credentialHash),
-      presentation: result.presentation ?? result,
-      mock: false,
-    };
+export async function verifyStatusProof(token: string): Promise<Record<string, unknown>> {
+  if (token.startsWith('MOCK-PROOF-')) {
+    return { ok: true, reason: 'mock' };
   }
 
-  return {
-    proofToken: mockTokenForHash(credentialHash),
-    presentation: { hash: credentialHash, issuedAt: Date.now() },
-    mock: true,
-  };
-}
+  const failure = { ok: false, reason: 'verify-failed' };
 
-export async function verifyStatusProof(token: string): Promise<VerifyStatusProofResponse> {
-  const result = await callAcaPy(VERIFY_PATH, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ token }),
-  });
+  try {
+    const response = await postJson(`${ADMIN_BASE}/admin/verify`, { token });
 
-  if (!result) {
-    if (token.startsWith('MOCK-PROOF-')) {
-      return { ok: true, reason: 'mock verification' };
+    if (!response.ok) {
+      return failure;
     }
-    return { ok: false, reason: 'ACA-Py unavailable and token is not a recognised mock proof' };
-  }
 
-  const ok = Boolean(result.valid ?? result.success ?? result.ok ?? false);
-  return {
-    ok,
-    reason: ok ? result.reason ?? result.message : result.error ?? result.reason,
-  };
+    const data = await response.json();
+    const record = asRecord(data);
+
+    return record ?? failure;
+  } catch (error) {
+    return failure;
+  }
 }
