@@ -25,6 +25,9 @@ model Credential {
   issuedAt DateTime @default(now())
   user     User     @relation(fields: [userId], references: [id])
   userId   Int
+  chainTxId    String?
+  chainStatus  String  @default("PENDING")
+  proofToken   String?
 }
 
 model Job {

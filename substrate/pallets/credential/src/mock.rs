@@ -22,6 +22,7 @@ frame_support::construct_runtime!(
 
 parameter_types! {
     pub const BlockHashCount: u64 = 240;
+    pub const MaxRevocationReason: u32 = 100;
 }
 
 impl system::Config for Test {
@@ -54,6 +55,7 @@ impl system::Config for Test {
 impl pallet_credential::Config for Test {
     type RuntimeEvent = RuntimeEvent;
     type TrustRegistryOrigin = frame_system::EnsureRoot<u64>;
+    type MaxRevocationReason = MaxRevocationReason;
 }
 
 pub use CredentialPallet as Credential;

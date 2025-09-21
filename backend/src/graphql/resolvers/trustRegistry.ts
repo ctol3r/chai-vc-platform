@@ -1,10 +1,5 @@
 import { getPolkadotApi, getSigner } from "@/blockchain/api";
-
-function assertAdmin(ctx: any) {
-  if (!ctx.user?.roles?.includes("admin")) {
-    throw new Error("Unauthorized: admin role required");
-  }
-}
+import { assertAdmin } from "../../auth/roles";
 
 export const Mutation = {
   async authorizeIssuer(_: any, { account }: { account: string }, ctx: any) {

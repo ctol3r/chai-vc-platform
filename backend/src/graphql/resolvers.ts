@@ -1,9 +1,15 @@
 import { PrismaClient } from '@prisma/client';
 import { AuditScrapbook } from '../blockchain/audit_scrapbook';
 import { PolkadotService } from '../blockchain/polkadot_service';
+import { assertAdmin } from '../auth/roles';
+import { IssuanceMutation } from './resolvers/issuance';
+import { VerifierMutation } from './resolvers/verifier';
 
 type Context = {
   prisma: PrismaClient;
+  user?: {
+    roles?: string[];
+  };
 };
 
 const polkadotService = new PolkadotService();
@@ -69,13 +75,27 @@ export const resolvers = {
 
     deleteCredential: (_parent: unknown, args: { id: string }, context: Context) =>
       context.prisma.credential.delete({ where: { id: args.id } }),
+    issueCredential: (parent: unknown, args: unknown, context: Context) =>
+      IssuanceMutation.issueCredential(parent, args as any, context),
+    revokeCredential: (parent: unknown, args: unknown, context: Context) =>
+      IssuanceMutation.revokeCredential(parent, args as any, context),
+    verifyProof: (parent: unknown, args: unknown) =>
+      VerifierMutation.verifyProof(parent, args as any),
     authorizeIssuer: async (
       _parent: unknown,
-      args: { account: string }
-    ) => handleTrustRegistryMutation('authorize', args.account),
+      args: { account: string },
+      context: Context & { user?: { roles?: string[] } }
+    ) => {
+      assertAdmin(context);
+      return handleTrustRegistryMutation('authorize', args.account);
+    },
     deauthorizeIssuer: async (
       _parent: unknown,
-      args: { account: string }
-    ) => handleTrustRegistryMutation('deauthorize', args.account),
+      args: { account: string },
+      context: Context & { user?: { roles?: string[] } }
+    ) => {
+      assertAdmin(context);
+      return handleTrustRegistryMutation('deauthorize', args.account);
+    },
   },
 };
