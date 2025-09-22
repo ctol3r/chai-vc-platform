@@ -82,21 +82,21 @@ export class VerifierStakingService {
      * Stake tokens by sending native currency to the contract.
      */
     async stake(amount: BigNumberish) {
-        return await (this.contract as unknown as { stake: (options: any) => Promise<any> }).stake({ value: amount });
+        return await this.contract!.stake({ value: amount });
     }
 
     /**
      * Withdraw previously staked tokens.
      */
     async withdraw(amount: BigNumberish) {
-        return await (this.contract as unknown as { withdraw: (value: any) => Promise<any> }).withdraw(amount);
+        return await this.contract!.withdraw(amount);
     }
 
     /**
      * Slash a verifier's stake. Only the contract owner can call this.
      */
     async slash(verifier: string, amount: BigNumberish) {
-        return await (this.contract as unknown as { slash: (address: string, value: any) => Promise<any> }).slash(verifier, amount);
+        return await this.contract!.slash(verifier, amount);
     }
 }
 

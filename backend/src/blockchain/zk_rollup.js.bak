@@ -1,5 +1,5 @@
 const crypto = require('crypto');
-const { PolkadotService } = require('./polkadot_service');
+const polkadot = require('./polkadot_service');
 
 /**
  * Represents a credential operation.
@@ -37,8 +37,16 @@ class ZkRollupBatcher {
     this.ops = [];
     const data = JSON.stringify(batch);
     const proof = crypto.createHash('sha256').update(data).digest('hex');
-    const service = new PolkadotService();
-    const { txHash } = await service.anchorProof(proof);
+    const anchor = (polkadot && (polkadot.anchorProof || (polkadot.default && polkadot.default.anchorProof) || (typeof polkadot === "function" ? polkadot : null)));
+let txHash;
+if (anchor && typeof anchor === "function") {
+  txHash = await anchor(proof);
+} else if (typeof polkadot === "function") {
+  txHash = await polkadot(proof);
+} else {
+  throw new Error("polkadot.anchorProof is not available");
+}
+
     return { proof, txHash, batch };
   }
 }
