@@ -59,5 +59,7 @@ export const typeDefs = gql`
     createJob(title: String!, description: String, organizationId: Int!, userId: Int): Job!
     updateJob(id: ID!, title: String, description: String, organizationId: Int, userId: Int): Job
     deleteJob(id: ID!): Job
+    authorizeIssuer(account: String!): Boolean!
+    deauthorizeIssuer(account: String!): Boolean!
   }
 `;

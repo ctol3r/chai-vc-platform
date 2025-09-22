@@ -1,6 +1,8 @@
 import { ApolloServer, gql } from 'apollo-server-express';
 import { Express } from 'express';
 import { PrismaClient } from '@prisma/client';
+import { AuditScrapbook } from '../blockchain/audit_scrapbook';
+import { PolkadotService } from '../blockchain/polkadot_service';
 
 // Comprehensive GraphQL schema integrating Express Apollo Server with Prisma
 const typeDefs = gql`
@@ -52,14 +54,58 @@ const typeDefs = gql`
     ): Credential
     postJob(title: String!, description: String, postedBy: ID!): Job
     applyForJob(jobId: ID!, userId: ID!): Job
+    authorizeIssuer(account: String!): Boolean!
+    deauthorizeIssuer(account: String!): Boolean!
   }
 `;
+
+const polkadotService = new PolkadotService();
+const auditScrapbook = new AuditScrapbook(polkadotService);
+
+async function handleTrustRegistryMutation(
+  action: 'authorize' | 'deauthorize',
+  account: string
+): Promise<boolean> {
+  const trimmed = account.trim();
+  if (!trimmed) {
+    return false;
+  }
+
+  const auditAction = `${action.toUpperCase()}_ISSUER:${trimmed}`;
+
+  try {
+    if (action === 'authorize') {
+      await polkadotService.authorizeIssuer(trimmed);
+    } else {
+      await polkadotService.deauthorizeIssuer(trimmed);
+    }
+    await auditScrapbook.recordIdentityAction('trust-registry-admin', auditAction);
+    return true;
+  } catch (error) {
+    console.error(`Failed to ${action} issuer`, error);
+    await auditScrapbook.recordIdentityAction(
+      'trust-registry-admin',
+      `FAILED_${auditAction}`
+    );
+    return false;
+  }
+}
 
 const resolvers = {
   Query: {
     credentials: async (_parent: unknown, _args: unknown, ctx: { prisma: PrismaClient }) => {
       return ctx.prisma.credential.findMany();
     },
+  },
+  Mutation: {
+    authorizeIssuer: async (
+      _parent: unknown,
+      args: { account: string }
+    ): Promise<boolean> => handleTrustRegistryMutation('authorize', args.account),
+    deauthorizeIssuer: async (
+      _parent: unknown,
+      args: { account: string }
+    ): Promise<boolean> => handleTrustRegistryMutation('deauthorize', args.account),
   },
 };
 
