@@ -4,6 +4,7 @@
   "description": "chai vc platform backend",
   "main": "dist/server.js",
   "license": "ISC",
+  "type": "commonjs",
   "scripts": {
     "dev": "ts-node src/server.ts",
     "build": "tsc",
