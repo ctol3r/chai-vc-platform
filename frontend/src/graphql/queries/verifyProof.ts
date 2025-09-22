@@ -1,7 +1,7 @@
 import { gql } from "@apollo/client";
 
 export const VERIFY_PROOF = gql`
-  mutation VerifyProof($presentationToken: String!) {
+  query VerifyProof($presentationToken: String!) {
     verifyProof(presentationToken: $presentationToken) {
       valid
       reason

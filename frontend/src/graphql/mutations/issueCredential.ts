@@ -1,8 +1,9 @@
 import { gql } from "@apollo/client";
 
 export const ISSUE_CREDENTIAL = gql`
-  mutation IssueCredential($account: String!, $data: String!, $shareStatusOnly: Boolean) {
-    issueCredential(account: $account, data: $data, shareStatusOnly: $shareStatusOnly) {
+  mutation IssueCredential($input: IssueCredentialInput!) {
+    issueCredential(input: $input) {
+      id
       chainTxId
       chainStatus
       proofToken
@@ -11,13 +12,16 @@ export const ISSUE_CREDENTIAL = gql`
 `;
 
 export interface IssueCredentialVariables {
-  account: string;
-  data: string;
-  shareStatusOnly?: boolean;
+  input: {
+    subjectAccount: string;
+    payload: string;
+    shareStatusOnly?: boolean;
+  };
 }
 
 export interface IssueCredentialResponse {
   issueCredential: {
+    id?: string | null;
     chainTxId?: string | null;
     chainStatus?: string | null;
     proofToken?: string | null;

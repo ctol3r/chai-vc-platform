@@ -1,19 +1,45 @@
-import { useState } from "react";
-import { useMutation } from "@apollo/client/react";
+import { FormEvent, useEffect, useState } from "react";
+import { useLazyQuery } from "@apollo/client/react";
 import {
   VERIFY_PROOF,
   VerifyProofResponse,
   VerifyProofVariables,
 } from "@/graphql/queries/verifyProof";
+import useVault from "@/hooks/useVault";
 
 export default function VerifyProofPage() {
   const [token, setToken] = useState("");
   const [result, setResult] = useState<{ valid: boolean; reason?: string | null } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const [verifyProof, { loading }] = useMutation<VerifyProofResponse, VerifyProofVariables>(VERIFY_PROOF);
+  const { get: loadLatestToken, set: rememberToken } = useVault(
+    "latest-status-proof"
+  );
 
-  const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const [verifyProof, { loading }] = useLazyQuery<
+    VerifyProofResponse,
+    VerifyProofVariables
+  >(VERIFY_PROOF, {
+    fetchPolicy: "network-only",
+  });
+
+  useEffect(() => {
+    let active = true;
+    loadLatestToken()
+      .then((stored) => {
+        if (stored && active) {
+          setToken(stored);
+        }
+      })
+      .catch(() => {
+        /* swallow vault read errors */
+      });
+    return () => {
+      active = false;
+    };
+  }, [loadLatestToken]);
+
+  const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setResult(null);
     setError(null);
@@ -24,18 +50,36 @@ export default function VerifyProofPage() {
         throw new Error("Proof token is required");
       }
 
-      const { data } = await verifyProof({ variables: { presentationToken: trimmed } });
-      if (!data?.verifyProof) {
+      if (trimmed.length < 12) {
+        throw new Error("Proof token appears too short to be valid");
+      }
+
+      const response = await verifyProof({
+        variables: { presentationToken: trimmed },
+      });
+
+      if (response.error) {
+        throw response.error;
+      }
+
+      if (!response.data?.verifyProof) {
         throw new Error("No verification response received");
       }
-      setResult(data.verifyProof);
+
+      setResult(response.data.verifyProof);
+      await rememberToken(trimmed);
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      if (err && typeof err === "object" && "message" in err) {
+        setError(String((err as { message?: unknown }).message ?? ""));
+        return;
+      }
+      setError(String(err));
     }
   };
 
   return (
     <div style={{ maxWidth: 640, margin: "0 auto", padding: "2rem" }}>
+      {/* TODO: replace inline styles with shared verification layout components. */}
       <h1>Verify Status Proof</h1>
       <p>Paste a proof token to confirm whether the underlying credential is still active.</p>
 

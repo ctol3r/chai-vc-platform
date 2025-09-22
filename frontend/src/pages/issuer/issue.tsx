@@ -5,8 +5,10 @@ import {
   IssueCredentialResponse,
   IssueCredentialVariables,
 } from "@/graphql/mutations/issueCredential";
+import useVault from "@/hooks/useVault";
 
 type SubmissionState = {
+  id?: string | null;
   chainTxId?: string | null;
   chainStatus?: string | null;
   proofToken?: string | null;
@@ -19,6 +21,10 @@ export default function IssueCredentialPage() {
   const [result, setResult] = useState<SubmissionState | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const { set: storeProofToken, clear: clearProofToken } = useVault(
+    "latest-status-proof"
+  );
+
   const [issueCredential, { loading }] = useMutation<
     IssueCredentialResponse,
     IssueCredentialVariables
@@ -30,15 +36,35 @@ export default function IssueCredentialPage() {
     setResult(null);
 
     try {
-      if (!account.trim()) {
+      const trimmedAccount = account.trim();
+      if (!trimmedAccount) {
         throw new Error("Account is required");
+      }
+
+      if (trimmedAccount.length < 10) {
+        throw new Error("Account must be a valid SS58 address");
+      }
+
+      const trimmedPayload = payload.trim();
+      if (!trimmedPayload) {
+        throw new Error("Credential payload is required");
+      }
+
+      if (/^[\[{]/.test(trimmedPayload)) {
+        try {
+          JSON.parse(trimmedPayload);
+        } catch {
+          throw new Error("Payload must be valid JSON when using structured data");
+        }
       }
 
       const { data } = await issueCredential({
         variables: {
-          account: account.trim(),
-          data: payload,
-          shareStatusOnly,
+          input: {
+            subjectAccount: trimmedAccount,
+            payload: trimmedPayload,
+            shareStatusOnly,
+          },
         },
       });
 
@@ -47,13 +73,26 @@ export default function IssueCredentialPage() {
       }
 
       setResult(data.issueCredential);
+
+      if (shareStatusOnly && data.issueCredential.proofToken) {
+        await storeProofToken(data.issueCredential.proofToken);
+      }
+
+      if (!shareStatusOnly) {
+        clearProofToken();
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      if (err && typeof err === "object" && "message" in err) {
+        setError(String((err as { message?: unknown }).message ?? ""));
+        return;
+      }
+      setError(String(err));
     }
   };
 
   return (
     <div style={{ maxWidth: 640, margin: "0 auto", padding: "2rem" }}>
+      {/* TODO: replace inline styles and inputs with shared design system components. */}
       <h1>Issue Credential</h1>
       <p>Submit a credential payload for a clinician account. Optionally generate a status-only proof token to share with verifiers.</p>
 
@@ -102,6 +141,11 @@ export default function IssueCredentialPage() {
       {result && (
         <div style={{ marginTop: "1.5rem", padding: "1rem", background: "#ecfdf5", borderRadius: "0.75rem" }}>
           <h2>Chain Receipt</h2>
+          {result.id && (
+            <p>
+              <strong>Credential ID:</strong> {result.id}
+            </p>
+          )}
           <p>
             <strong>Transaction Hash:</strong> {result.chainTxId ?? "pending"}
           </p>

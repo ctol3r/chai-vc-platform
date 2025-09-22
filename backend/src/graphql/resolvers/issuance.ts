@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { PolkadotService } from '../../blockchain/polkadot_service';
 import { issueStatusProof } from '../../blockchain/acaPy';
-import { assertIssuer } from '../../auth/roles';
+import { assertIssuer } from '../../middleware/auth';
 
 const polkadotService = new PolkadotService();
 

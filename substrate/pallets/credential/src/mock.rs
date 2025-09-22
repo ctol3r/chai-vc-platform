@@ -54,6 +54,7 @@ impl system::Config for Test {
 impl pallet_credential::Config for Test {
     type RuntimeEvent = RuntimeEvent;
     type TrustRegistryOrigin = frame_system::EnsureRoot<u64>;
+    type MaxRevocationReason = frame_support::traits::ConstU32<1024>;
 }
 
 pub use CredentialPallet as Credential;
