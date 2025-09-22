@@ -140,7 +140,7 @@ export default function IssueCredentialPage() {
 
       {result && (
         <div style={{ marginTop: "1.5rem", padding: "1rem", background: "#ecfdf5", borderRadius: "0.75rem" }}>
-          <h2>Chain Receipt</h2>
+          <h2>Credential issued successfully</h2>
           {result.id && (
             <p>
               <strong>Credential ID:</strong> {result.id}
