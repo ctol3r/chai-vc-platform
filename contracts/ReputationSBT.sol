@@ -34,7 +34,7 @@ contract ReputationSBT is ERC721, IERC5484 {
     }
 
     function burnAuth(uint256 tokenId) public view override returns (BurnAuth) {
-        require(_exists(tokenId), "Nonexistent token");
+        require(_ownerOf(tokenId) != address(0), "Nonexistent token");
         return _burnAuthInfo[tokenId];
     }
 
@@ -57,12 +57,16 @@ contract ReputationSBT is ERC721, IERC5484 {
         _burn(tokenId);
     }
 
-    function _beforeTokenTransfer(address from, address to, uint256 tokenId, uint256 batchSize)
+    function _update(address to, uint256 tokenId, address auth)
         internal
         override
+        returns (address)
     {
-        super._beforeTokenTransfer(from, to, tokenId, batchSize);
-        require(from == address(0) || to == address(0), "SBTs are non-transferable");
+        address from = _ownerOf(tokenId);
+        if (from != address(0) && to != address(0)) {
+            revert("SBTs are non-transferable");
+        }
+        return super._update(to, tokenId, auth);
     }
 
     function approve(address, uint256) public pure override {
