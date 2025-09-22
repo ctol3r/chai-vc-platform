@@ -1,5 +1,6 @@
-const { expect } = require("chai");
-const { ethers } = require("hardhat");
+const { expect  } = require("chai");
+const hre = require("hardhat");
+const { ethers } = hre;
 
 describe("ReputationSBT", function () {
   it("should deploy and mint", async function () {
