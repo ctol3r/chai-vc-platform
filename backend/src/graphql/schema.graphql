@@ -1,0 +1,4 @@
+extend type Mutation {
+  authorizeIssuer(account: String!): Boolean!
+  deauthorizeIssuer(account: String!): Boolean!
+}

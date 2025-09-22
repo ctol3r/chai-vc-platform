@@ -18,3 +18,23 @@ cache/
 /target/
 **/target/
 /substrate/pallet-state-board/target/
+backend/.venv
+ai-matcher-service/.venv
+frontend/.next
+frontend/tsconfig.tsbuildinfo
+batch-pr.sh
+
+# local agent settings
+.claude/
+
+# Next.js build
+frontend/.next/
+# local GH protection snapshots
+protection*.json
+
+# Build/locals
+frontend/.next/
+node_modules/
+*.env
+.env*
+.DS_Store

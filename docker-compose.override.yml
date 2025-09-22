@@ -1,15 +1,64 @@
-version: '3.8'
 services:
-  postgres:
-    image: postgres:15
-    restart: always
+  aca-py:
+    build:
+      context: ./scripts/mock_aca
+      dockerfile: Dockerfile
+    image: chai/mock-aca:latest
     ports:
-      - "5432:5432"
+      - "8021:8021"
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-volumes:
-  postgres_data:
+      - ACAPY_ADMIN_ENDPOINT=http://aca-py:8021
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8021/status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: ["uvicorn","app:app","--host","0.0.0.0","--port","8021"]
+
+  backend:
+    build:
+      context: ./scripts/mock_backend
+      dockerfile: Dockerfile
+    image: chai/mock-backend:latest
+    ports:
+      - "4000:4000"
+    environment:
+      - ACAPY_ADMIN_ENDPOINT=http://aca-py:8021
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/chai_platform
+    depends_on:
+      - postgres
+      - aca-py
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: ["uvicorn","app:app","--host","0.0.0.0","--port","4000"]
+
+  frontend:
+    build:
+      context: ./scripts/mock_frontend
+      dockerfile: Dockerfile
+    image: chai/mock-frontend:latest
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: ["uvicorn","app:app","--host","0.0.0.0","--port","3000"]
+
+  substrate-node:
+    build:
+      context: ./scripts/mock_substrate
+      dockerfile: Dockerfile
+    image: chai/mock-substrate:latest
+    ports:
+      - "9933:9933"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9933/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: ["uvicorn","app:app","--host","0.0.0.0","--port","9933"]
