@@ -22,3 +22,4 @@ cache/
 # Python/Node virtual envs
 **/.venv/
 .venv/
+frontend/.next/
