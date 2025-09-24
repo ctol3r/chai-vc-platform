@@ -23,7 +23,17 @@ export async function encryptData(data: string, password: string): Promise<strin
     const result = new Uint8Array(iv.length + cipherBuffer.byteLength);
     result.set(iv, 0);
     result.set(new Uint8Array(cipherBuffer), iv.length);
-    return btoa(String.fromCharCode(...result));
+
+    // Convert Uint8Array -> base64 safely (no spread on typed arrays)
+    const u8 = result;
+    const CHUNK = 0x8000; // chunking avoids call-arg limits
+    let str = '';
+    for (let i = 0; i < u8.length; i += CHUNK) {
+        const slice = u8.subarray(i, Math.min(i + CHUNK, u8.length));
+        // Array.from(slice) converts to a plain number[] which String.fromCharCode accepts
+        str += String.fromCharCode.apply(null, Array.from(slice));
+    }
+    return btoa(str);
 }
 
 export async function decryptData(payload: string, password: string): Promise<string> {
