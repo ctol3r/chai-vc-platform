@@ -41,7 +41,7 @@ export class PolkadotService {
       throw new Error('API not connected');
     }
     const tx = this.api.tx.credentialsModule.issueCredential(dest, data);
-    return tx.signAndSend() as unknown as any;
+    return tx.signAndSend(null as any) as unknown as any;
   }
 
   /**
@@ -63,7 +63,7 @@ export class PolkadotService {
       this.api!.tx.credentialsModule.issueCredential(dest, data[i])
     );
     const batch = this.api.tx.utility.batch(calls);
-    return batch.signAndSend() as unknown as any;
+    return batch.signAndSend(null as any) as unknown as any;
   }
 
   /** Store audit record on-chain for immutable tracking. */
