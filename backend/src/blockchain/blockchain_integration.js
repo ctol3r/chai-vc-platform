@@ -25,3 +25,25 @@ try {
 } catch(e) {
   // non-fatal
 }
+
+
+
+// --- Quickpatch: expose commonly-imported functions/classes as named CommonJS exports ---
+// This is a temporary, safe shim so TS/JS importers (and tests) can find these names.
+// If the function/class is undefined nothing is overwritten.
+try {
+  if (typeof checkCredentialStatus === 'function' && !(module && module.exports && module.exports.checkCredentialStatus)) {
+    module.exports.checkCredentialStatus = checkCredentialStatus;
+    exports.checkCredentialStatus = checkCredentialStatus;
+  }
+  if (typeof resolveDID === 'function' && !(module && module.exports && module.exports.resolveDID)) {
+    module.exports.resolveDID = resolveDID;
+    exports.resolveDID = resolveDID;
+  }
+  if (typeof CrossChainDIDResolver !== 'undefined' && !(module && module.exports && module.exports.CrossChainDIDResolver)) {
+    module.exports.CrossChainDIDResolver = CrossChainDIDResolver;
+    exports.CrossChainDIDResolver = CrossChainDIDResolver;
+  }
+} catch (e) {
+  // non-fatal quickpatch
+}
