@@ -1,8 +1,4 @@
-## Summary
-- What changed and why
-
-## Checks
-- [ ] Tests updated/added
-- [ ] Docs/README updated
-- [ ] Security impact considered (auth, crypto, PII, migrations)
-
+# PR Checklist
+- [ ] Tests pass locally
+- [ ] Lint passes
+- [ ] Security scan run

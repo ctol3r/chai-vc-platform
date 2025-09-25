@@ -1,0 +1,17 @@
+# minimal CI file
+name: PR CI
+on: [pull_request]
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with: node-version: '22'
+      - name: Backend CI
+        run: |
+          cd backend
+          npm ci
+          npm run build
+          npm test --silent
