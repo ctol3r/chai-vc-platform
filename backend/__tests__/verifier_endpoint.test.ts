@@ -1,3 +1,7 @@
+jest.mock('../src/blockchain/blockchain_integration', () => ({
+  __esModule: true,
+  checkCredentialStatus: jest.fn(async (_id) => 'valid'),
+}));
 import request from 'supertest';
 import express from 'express';
 import { router as verifierRouter } from '../src/routes/verifier_routes';

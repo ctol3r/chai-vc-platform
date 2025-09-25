@@ -1,5 +1,6 @@
-import { checkCredentialStatus, CredentialStatus } from '../blockchain/blockchain_integration';
+import { checkCredentialStatus } from '../blockchain/blockchain_integration';
 
-export async function getCredentialStatus(credentialId: string): Promise<CredentialStatus> {
-  return checkCredentialStatus(credentialId);
+export async function getCredentialStatus(credentialId: string): Promise<'valid'|'revoked'|'unknown'> {
+  const id = typeof credentialId === 'string' ? credentialId : String(credentialId ?? '');
+  return await checkCredentialStatus(id);
 }
