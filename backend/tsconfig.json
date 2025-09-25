@@ -14,10 +14,10 @@
     "allowSyntheticDefaultImports": true
   },
   "include": [
-    "src/**/*",
-    "prisma/seed.ts"
+    "src/**/*"
   ],
   "exclude": [
-    "__tests__"
+    "__tests__",
+    "prisma/seed.ts"
   ]
 }
