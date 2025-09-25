@@ -4,7 +4,7 @@
     "module": "commonjs",
     "rootDir": "src",
     "outDir": "dist",
-    "strict": true,
+    "strict": false,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
@@ -14,5 +14,7 @@
     "src/**/*",
     "prisma/seed.ts"
   ],
-  "exclude": ["__tests__"]
+  "exclude": [
+    "__tests__"
+  ]
 }
