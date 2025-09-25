@@ -22,3 +22,10 @@ cache/
 # Python/Node virtual envs
 **/.venv/
 .venv/
+# Next.js build & cache
+frontend/.next
+frontend/.next/*
+# Dist artifacts
+backend/dist
+# TypeScript incremental
+**/.tsbuildinfo
