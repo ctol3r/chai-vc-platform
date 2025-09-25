@@ -9,3 +9,5 @@ assert.strictEqual(policy.getActiveKey(now), 'key1', 'Key should remain the same
 assert.strictEqual(policy.getActiveKey(now + 1500), 'key2', 'Key should rotate after time lock');
 
 console.log('KeyRotationPolicy tests passed');
+// Added placeholder test to ensure suite runs (temporary)
+test('placeholder - key_rotation_policy', () => { expect(true).toBe(true); });

@@ -1,0 +1,22 @@
+name: Node CI Cache
+
+on:
+  workflow_dispatch:
+
+jobs:
+  backend-install:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - uses: actions/cache@v4
+        with:
+          path: backend/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('backend/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      - name: Install backend dependencies
+        timeout-minutes: 10
+        run: cd backend && npm ci --prefer-offline --no-audit --no-fund

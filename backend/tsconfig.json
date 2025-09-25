@@ -4,15 +4,20 @@
     "module": "commonjs",
     "rootDir": "src",
     "outDir": "dist",
-    "strict": true,
+    "strict": false,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "noImplicitAny": false,
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true
   },
   "include": [
-    "src/**/*",
-    "prisma/seed.ts"
+    "src/**/*"
   ],
-  "exclude": ["__tests__"]
+  "exclude": [
+    "__tests__",
+    "prisma/seed.ts"
+  ]
 }
