@@ -16,7 +16,8 @@
     "src/**/*",
     "prisma/seed.ts",
     "prisma/**/*",
-    "src/types/**/*.d.ts"
+    "src/types/**/*.d.ts",
+    "test/**/*.ts"
   ],
   "exclude": [
     "__tests__"

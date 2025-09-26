@@ -112,15 +112,25 @@ export class PolkadotService {
     return this.api;
   }
 
-  private async signAndAwait(
+  protected async signAndAwait(
     extrinsic: SubmittableExtrinsicLike,
     signer: KeyringPair,
   ): Promise<SubmittableResult> {
+    // TODO(issue-tracker): replace guard with proper typed result once polkadot api typings are upgraded.
+    type TxResult = SubmittableResult & {
+      status?: {
+        isInBlock?: boolean;
+        isFinalized?: boolean;
+      };
+    };
+
     return new Promise<SubmittableResult>((resolve, reject) => {
-      let unsubscribe: (() => void) | null = null;
+      let unsubscribe: (() => void) | undefined;
 
       const handleResult = (result: SubmittableResult) => {
-        if (result.status.isInBlock || result.status.isFinalized) {
+        const status = (result as TxResult).status;
+        const isComplete = Boolean(status?.isInBlock || status?.isFinalized);
+        if (isComplete) {
           unsubscribe?.();
           resolve(result);
         }

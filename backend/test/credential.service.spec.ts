@@ -1,6 +1,6 @@
 import { encryptJson } from '../src/crypto/field_encryption';
 import { createCredential, getCredentialByHash, updateStatus } from '../src/services/credential.service';
-import { PrismaClient, CredentialStatus } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import crypto from 'crypto';
 
 const prisma = new PrismaClient();
@@ -29,8 +29,8 @@ describe('Credential Prisma model', () => {
     const fetched = await getCredentialByHash(created.hash);
     expect(fetched?.issuer).toBe('did:web:board.example');
 
-    const updated = await updateStatus(created.hash, CredentialStatus.VERIFIED);
-    expect(updated.status).toBe(CredentialStatus.VERIFIED);
+    const updated = await updateStatus(created.hash, 'VERIFIED');
+    expect(updated.status).toBe('VERIFIED');
   });
 });
 

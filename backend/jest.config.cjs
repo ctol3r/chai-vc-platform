@@ -1,12 +1,18 @@
-module.exports = {
+const config = {
+  preset: 'ts-jest',
+  testEnvironment: 'node',
+  rootDir: '.',
+  testMatch: ['**/__tests__/**/*.(test|spec).ts'],
   testPathIgnorePatterns: [
-    "/node_modules/",
-    "/__tests__/helpers/",
-    "/test/helpers/__snapshots__/"
+    '<rootDir>/node_modules/',
+    '<rootDir>/__tests__/helpers/',
+    '<rootDir>/test/helpers/__snapshots__/'
   ],
   transform: {
-    '^.+\\.(ts|tsx)$': 'ts-jest'
+    '^.+\\.(ts|tsx)$': ['ts-jest', { diagnostics: false }],
   },
-  testEnvironment: 'node',
-  testRegex: '(/__tests__/.*|(\\.|/)(test|spec))\\.(ts|tsx|js)$'
+  setupFilesAfterEnv: ['<rootDir>/test/setupTests.ts'],
+  collectCoverageFrom: ['src/**/*.ts', '!src/types/**']
 };
+
+module.exports = config;

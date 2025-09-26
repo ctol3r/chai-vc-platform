@@ -1,4 +1,4 @@
-import { Contract, Interface } from 'ethers';
+import { Contract } from 'ethers';
 import type {
   BaseContract,
   BigNumberish,
@@ -13,9 +13,6 @@ export type ChaiSoulboundTokenContract = BaseContract & {
   ownerOf(tokenId: BigNumberish): Promise<string>;
   balanceOf(owner: string): Promise<bigint>;
 };
-
-const toInterface = (abi: Interface | InterfaceAbi): Interface =>
-  abi instanceof Interface ? abi : new Interface(abi);
 
 const hasSignerCapabilities = (runner: ContractRunner | null): runner is ContractRunner & {
   provider?: unknown;
@@ -32,25 +29,21 @@ const hasSignerCapabilities = (runner: ContractRunner | null): runner is Contrac
  */
 export class ChaiSoulboundToken {
   private contract: ChaiSoulboundTokenContract;
-  private readonly contractInterface: Interface;
 
   constructor(
     address: string,
     runner: ContractRunner,
-    abi: Interface | InterfaceAbi = ChaiSoulboundToken.DEFAULT_ABI,
+    abi: InterfaceAbi = ChaiSoulboundToken.DEFAULT_ABI,
   ) {
-    this.contractInterface = toInterface(abi);
-    this.contract = new Contract(
-      address,
-      this.contractInterface,
-      runner,
-    ) as unknown as ChaiSoulboundTokenContract;
+    // TODO(issue-tracker): replace cast with generated ethers contract typings once available.
+    this.contract = new Contract(address, abi, runner) as unknown as ChaiSoulboundTokenContract;
   }
 
   /**
    * Connect the wrapper to a new runner (provider or signer).
    */
   connect(runner: ContractRunner): void {
+    // TODO(issue-tracker): replace cast with generated ethers contract typings once available.
     this.contract = this.contract.connect(runner) as unknown as ChaiSoulboundTokenContract;
   }
 

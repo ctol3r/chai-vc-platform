@@ -1,43 +1,29 @@
-import type { CredentialStatus } from '../../src/blockchain/blockchain_integration';
-
-type MockedCheckStatus = jest.Mock<Promise<CredentialStatus>, [unknown?]>;
-
-type BlockchainIntegrationMock = {
+export interface BlockchainIntegrationMock {
   factory: () => {
     __esModule: true;
-    checkCredentialStatus: MockedCheckStatus;
-    default: { checkCredentialStatus: MockedCheckStatus };
+    checkCredentialStatus: jest.Mock<Promise<'valid' | 'revoked' | 'unknown'>, [string]>;
+    default: {
+      checkCredentialStatus: jest.Mock<Promise<'valid' | 'revoked' | 'unknown'>, [string]>;
+    };
   };
-  checkCredentialStatus: MockedCheckStatus;
-  setDefaultStatus: (status: CredentialStatus) => void;
-  setStatusForCredential: (credentialId: string, status: CredentialStatus) => void;
-  clearOverrides: () => void;
-  reset: (status?: CredentialStatus) => void;
-};
-
-const normalizeId = (credentialId: unknown): string => {
-  if (typeof credentialId === 'string') return credentialId.trim().toLowerCase();
-  return String(credentialId ?? '').trim().toLowerCase();
-};
+  checkCredentialStatus: jest.Mock<Promise<'valid' | 'revoked' | 'unknown'>, [string]>;
+  setDefaultStatus: (status: 'valid' | 'revoked' | 'unknown') => void;
+  setStatusForCredential: (id: string, status: 'valid' | 'revoked' | 'unknown') => void;
+  reset: () => void;
+}
 
 export const createBlockchainIntegrationMock = (
-  initialStatus: CredentialStatus = 'valid'
+  initialStatus: 'valid' | 'revoked' | 'unknown' = 'valid'
 ): BlockchainIntegrationMock => {
-  let defaultStatus: CredentialStatus = initialStatus;
-  const overrides = new Map<string, CredentialStatus>();
+  let defaultStatus: 'valid' | 'revoked' | 'unknown' = initialStatus;
+  const overrides = new Map<string, 'valid' | 'revoked' | 'unknown'>();
 
-  const computeStatus = (credentialId: unknown): CredentialStatus => {
-    const normalized = normalizeId(credentialId);
-    return overrides.get(normalized) ?? defaultStatus;
+  const resolveStatus = async (credentialId: string): Promise<'valid' | 'revoked' | 'unknown'> => {
+    const normalised = credentialId.toLowerCase();
+    return overrides.get(normalised) ?? defaultStatus;
   };
 
-  const checkCredentialStatus: MockedCheckStatus = jest.fn(async (credentialId: unknown) => computeStatus(credentialId));
-
-  const refreshImplementation = () => {
-    checkCredentialStatus.mockImplementation(async (credentialId: unknown) => computeStatus(credentialId));
-  };
-
-  refreshImplementation();
+  const checkCredentialStatus = jest.fn(resolveStatus);
 
   return {
     factory: () => ({
@@ -46,25 +32,16 @@ export const createBlockchainIntegrationMock = (
       default: { checkCredentialStatus },
     }),
     checkCredentialStatus,
-    setDefaultStatus: (status: CredentialStatus) => {
+    setDefaultStatus: (status) => {
       defaultStatus = status;
-      refreshImplementation();
     },
-    setStatusForCredential: (credentialId: string, status: CredentialStatus) => {
-      overrides.set(normalizeId(credentialId), status);
-      refreshImplementation();
+    setStatusForCredential: (id, status) => {
+      overrides.set(id.toLowerCase(), status);
     },
-    clearOverrides: () => {
+    reset: () => {
       overrides.clear();
-      refreshImplementation();
-    },
-    reset: (status: CredentialStatus = initialStatus) => {
-      defaultStatus = status;
-      overrides.clear();
+      defaultStatus = initialStatus;
       checkCredentialStatus.mockClear();
-      refreshImplementation();
     },
   };
 };
-
-export type { BlockchainIntegrationMock };

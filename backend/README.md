@@ -1,13 +1,13 @@
-# Backend
+# Backend Quickstart
 
-## Database Seeding
+## Node/Deps
+- Node 20.x (or the version in CI)
+- Install (local dev): `npm install --legacy-peer-deps` (temporary until ethers/hardhat align)
 
-Run the Prisma migrations and seed the database with sample data for development.
-
+## Build & Test
 ```bash
-npm install
-npx prisma db push
-npm run seed
+cd backend
+npm install --legacy-peer-deps
+npm run build
+npm test -- --runInBand
 ```
-
-The seed script adds two example users, assigns them sample credentials, and creates jobs for each.
