@@ -1,0 +1,194 @@
+openapi: 3.0.3
+info:
+  title: Privacy Service API
+  version: 0.2.0
+servers:
+  - url: http://localhost:5050
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+  /keyinfo:
+    get:
+      summary: List available signing keys
+      responses:
+        '200':
+          description: Signing keys
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  keys:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/KeyInfo'
+  /prove:
+    post:
+      summary: Generate a BBS+ proof (stub)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProveRequest'
+      responses:
+        '200':
+          description: Proof generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProofRecord'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /verify:
+    post:
+      summary: Verify a BBS+ disclosure proof (stub)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyRequest'
+      responses:
+        '200':
+          description: Verification result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerificationResult'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    ProveRequest:
+      type: object
+      required: [subjectId, claims]
+      properties:
+        subjectId:
+          type: string
+        audience:
+          type: string
+        claims:
+          type: object
+          additionalProperties: true
+        revealFields:
+          type: array
+          items:
+            type: string
+    ProofRecord:
+      type: object
+      properties:
+        proofId:
+          type: string
+        issuedAt:
+          type: string
+          format: date-time
+        credential:
+          $ref: '#/components/schemas/IssuedCredential'
+        proof:
+          $ref: '#/components/schemas/DisclosureProof'
+    IssuedCredential:
+      type: object
+      properties:
+        credentialId:
+          type: string
+        subjectId:
+          type: string
+        claims:
+          type: object
+          additionalProperties: true
+        audience:
+          type: string
+        nonce:
+          type: string
+        signature:
+          type: string
+        issuedAt:
+          type: string
+          format: date-time
+    DisclosureProof:
+      type: object
+      properties:
+        proofId:
+          type: string
+        credentialId:
+          type: string
+        signature:
+          type: string
+        nonce:
+          type: string
+        disclosureSignature:
+          type: string
+        disclosureType:
+          type: string
+          enum: [full, selective]
+        revealedFields:
+          type: array
+          items:
+            type: string
+        revealedClaims:
+          type: object
+          additionalProperties: true
+        createdAt:
+          type: string
+          format: date-time
+    VerifyRequest:
+      type: object
+      required: [credential, proof]
+      properties:
+        credential:
+          $ref: '#/components/schemas/IssuedCredential'
+        proof:
+          $ref: '#/components/schemas/DisclosureProof'
+    VerificationResult:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        checkedAt:
+          type: string
+          format: date-time
+        reason:
+          type: string
+          nullable: true
+        details:
+          type: object
+          additionalProperties: true
+    KeyInfo:
+      type: object
+      properties:
+        keyId:
+          type: string
+        algorithm:
+          type: string
+        publicKeyJwk:
+          type: object
+          additionalProperties: true
+        expiresAt:
+          type: string
+          nullable: true
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string

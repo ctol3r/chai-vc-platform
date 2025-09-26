@@ -1,0 +1,32 @@
+
+> frontend@1.0.0 build
+> next build
+
+  ▲ Next.js 14.2.32
+
+   Linting and checking validity of types ...
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Collecting page data ...
+   Generating static pages (0/5) ...
+   Generating static pages (1/5) 
+   Generating static pages (2/5) 
+   Generating static pages (3/5) 
+ ✓ Generating static pages (5/5)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (pages)                             Size     First Load JS
+┌ ○ /404                                  180 B          80.8 kB
+├ ƒ /api/verify                           0 B            80.6 kB
+├ ○ /credentials/[id]                     860 B          81.4 kB
+├ ○ /onboarding                           824 B          81.4 kB
+└ ○ /verify                               1.82 kB        82.4 kB
++ First Load JS shared by all             80.6 kB
+  ├ chunks/framework-64ad27b21261a9ce.js  44.8 kB
+  ├ chunks/main-eb143115b8bf2786.js       34 kB
+  └ other shared chunks (total)           1.7 kB
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

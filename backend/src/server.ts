@@ -1,4 +1,3 @@
-import express from 'express';
 import { PrismaClient } from '@prisma/client';
 import { startApolloServer } from './graphql/graphql_api_scaffold';
 import app from './app';

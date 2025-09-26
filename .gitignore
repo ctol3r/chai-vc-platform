@@ -22,3 +22,9 @@ cache/
 # Python/Node virtual envs
 **/.venv/
 .venv/
+# TypeScript build artefacts
+**/.tsbuildinfo
+
+# Coverage reports
+backend/coverage/
+**/coverage/
