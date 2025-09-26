@@ -40,21 +40,52 @@ curl -X POST /api/hitl/escalate \
 ```
 
 ### 3. Acceptance Criteria
+
+#### Success Criteria (All Must Pass)
 ```yaml
 credential_approval_requires:
-  - Primary source verification (state medical board)
-  - Background check completion (no disqualifying actions)
-  - Education verification (medical school transcript)
-  - Current malpractice insurance
-  - Peer references (minimum 2)
-  - Specialty board certification (if applicable)
+  - Primary source verification (state medical board API response = "active")
+  - Background check completion (no disqualifying actions in last 7 years)
+  - Education verification (medical school transcript + LCME accreditation)
+  - Current malpractice insurance ($1M+ coverage, expires >90 days)
+  - Peer references (minimum 2 verified, rating ≥7/10)
+  - Specialty board certification (if applicable, current within 10 years)
+  - Identity verification (government ID + biometric match >95%)
+```
 
+#### Automatic Rejection Triggers
+```yaml
 automatic_rejection_triggers:
   - Active license suspension or probation
   - Unreported malpractice claims >$100K
-  - Criminal convictions (felony)
-  - Falsified application information
+  - Criminal convictions (felony or healthcare-related misdemeanor)
+  - Falsified application information (any field)
   - Expired credentials without renewal in progress
+  - Failed identity verification (<95% biometric match)
+  - Missing required documentation after 48h notice
+```
+
+#### Pass/Fail Test Cases
+```bash
+# PASS example
+{
+  "license_status": "active",
+  "background_clear": true,
+  "education_verified": true,
+  "insurance_valid": true,
+  "references_count": 3,
+  "identity_match": 0.97,
+  "decision": "APPROVE"
+}
+
+# FAIL example
+{
+  "license_status": "probation",
+  "background_clear": false,
+  "malpractice_claims": 150000,
+  "decision": "REJECT",
+  "reason": "Active probation + unreported claims"
+}
 ```
 
 ### 4. Review Process
@@ -130,3 +161,31 @@ curl /api/hitl/reviewer/{id}/stats | jq '.performance'
 - System down: Activate manual backup procedures
 
 **HITL Dashboard**: https://app.chai-vc.com/hitl/dashboard
+
+## Data Retention & Privacy
+
+### Retention Policy
+All HITL review data follows the privacy policy defined in `docs/PRIVACY/data-retention-erasure-policy.md`:
+
+```yaml
+retention_schedule:
+  review_decisions: 7_years  # regulatory requirement
+  audit_logs: 7_years       # compliance + legal defense
+  reviewer_notes: 2_years   # operational improvement
+  biometric_data: 90_days   # identity verification only
+
+erasure_triggers:
+  - Subject request (GDPR/CCPA Article 17)
+  - Retention period expiry
+  - Legal hold removal
+  - Credential revocation + 30 days
+```
+
+### Privacy Controls
+- All PII encrypted at rest (AES-256)
+- Access logs for all PHI/PII access
+- Reviewer access limited to assigned cases
+- Automatic redaction after retention period
+- No cross-border data transfer without adequacy
+
+> See `docs/PRIVACY/data-retention-erasure-policy.md` for complete retention matrix and erasure procedures.

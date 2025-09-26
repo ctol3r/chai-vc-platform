@@ -18,6 +18,9 @@ Catalog existing evidence for SOC 2 Type II audit across Trust Service Categorie
 | Encryption key management | @platform-engineering | HashiCorp Vault audit logs | ✅ Ready |
 | Code review evidence | @engineering-leads | GitHub PR reviews, branch protection | ✅ Ready |
 | Security training records | @hr-team | LMS completion reports | 🔄 In Progress |
+| **CODEOWNERS file** | @backend-team | `.github/CODEOWNERS` | ✅ Ready |
+| **Agent approval matrix** | @legal-compliance | `.agents/approvals.yaml` + `docs/AGENT_APPROVALS.md` | ✅ Ready |
+| **PR templates** | @product | `.github/PULL_REQUEST_TEMPLATE/agent.md` | ✅ Ready |
 
 ### Availability (CC7.1-CC7.2)
 | Evidence | Owner | Location | Status |
@@ -37,6 +40,8 @@ Catalog existing evidence for SOC 2 Type II audit across Trust Service Categorie
 | Healthcare workflow validation | @healthcare-team | HITL review logs, `docs/workflows/` | ✅ Ready |
 | Cryptographic proof verification | @crypto-team | ZK proof verification logs | ✅ Ready |
 | API rate limiting evidence | @platform-engineering | Kong rate limiting logs | ✅ Ready |
+| **CI/CD test logs** | @backend-team | GitHub Actions workflow runs + test reports | ✅ Ready |
+| **Jest test configurations** | @backend-team | `backend/jest.config.cjs` | ✅ Ready |
 
 ### Confidentiality (CC9.1)
 | Evidence | Owner | Location | Status |
