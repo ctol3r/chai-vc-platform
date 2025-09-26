@@ -1,4 +1,30 @@
-# Executive Summary: Chai VC Platform
+generated-by: Claude 2025-09-26T00:00:00Z
+# Executive Summary — CHAI•VC Platform
+
+## Current Status
+- ✅ MVP core features implemented (issuance, verification, job matching stubs)
+- ⚠️ Outstanding: TypeScript typings cleanup, privacy service integration
+
+## Top 5 Risks
+1. Regulatory alignment (CA ADS, CO AI Act)
+2. TypeScript/ethers v6 migration
+3. ZKP prover performance under load
+4. SOC2 audit evidence gaps
+5. Tokenomics legal classification
+
+## Next Asks
+- **Budget:** $XXX for compliance + audit readiness
+- **Hires:** 2x backend, 1x compliance lead
+- **Legal:** Opinion on VITA token classification
+
+## Roadmap
+- Q4 2025: Pilot with partner hospital
+- Q1 2026: Production launch with HITL + privacy layer
+- Q2 2026: Governance + token-curated registry
+
+---
+
+# Original Executive Summary: Chai VC Platform
 ## Healthcare Credentialing Revolution Through Zero-Knowledge Technology
 
 **Date:** January 2025
