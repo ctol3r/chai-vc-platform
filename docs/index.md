@@ -1,39 +1,72 @@
 generated-by: Claude 2025-09-26T00:00:00Z
-# Docs Index (MVP)
+# Documentation Index (Complete)
 
-## Core Documentation
-- [AGENTS.md](../AGENTS.md)
+## Quick Reference
+- [Developer FAQ](FAQ.md) - Top 20 questions and answers
+- [Terms Glossary](TERMS.md) - Platform vocabulary and acronyms
+- [How to PR](how-to-pr.md) - Pull request process and requirements
+- [Contributing Guide](../CONTRIBUTING.md) - Development workflow
+
+## Core Platform
+- [AGENTS.md](../AGENTS.md) - AI agent usage and capabilities
 - [Agent Approvals](AGENT_APPROVALS.md) + [Automation Rules](../.agents/approvals.yaml)
-- [Security Runbook](SECURITY_RUNBOOK.md)
+- [Security Runbook](SECURITY_RUNBOOK.md) - Incident response procedures
 - [Privacy & Data Retention](PRIVACY/data-retention-erasure-policy.md)
-- [SOC2 Artifacts](soc2-artifacts.md)
-- [HITL Review System](HITL/README.md)
-- [Reviewers](REVIEWERS.md)
+- [SOC2 Artifacts](soc2-artifacts.md) - Compliance evidence inventory
+- [HITL Review System](HITL/README.md) - Human reviewer workflows
+- [Reviewers](REVIEWERS.md) - Team assignments and contacts
 
 ## Governance & Process
-- [Contributing Guide](../CONTRIBUTING.md)
-- [Release Process](RELEASE_PROCESS.md)
-- [Labels Policy](labels.md)
-- [Merge Policy](merge_policy.md)
-- [Triage SOP](triage.md)
-- [Agent Kill-Switch](agent-kill-switch.md)
+- [Release Process](RELEASE_PROCESS.md) - Version control and deployment
+- [Labels Policy](labels.md) - GitHub label standards
+- [Merge Policy](merge_policy.md) - PR approval requirements
+- [Triage SOP](triage.md) - Issue and PR response procedures
+- [Agent Kill-Switch](agent-kill-switch.md) - Emergency AI disable procedures
+- [Proposal Process](governance/proposal-process.md) - Governance voting cycle
+- [Community Plan](governance/community-plan-100days.md) - First 100 days strategy
 
-## Compliance & Security
-- [AI Regulations Mapping](compliance/ai-regs-mapping.md)
+## Privacy & Compliance
+- [AI Regulations Mapping](compliance/ai-regs-mapping.md) - CA ADS & CO AI Act
 - [Security Review Checklist](security/review-checklist.md)
 - [Compliance Review Checklist](compliance/review-checklist.md)
 - [HIPAA Remediation Backlog](hipaa-remediation-backlog.md)
+- [Data Classification](PRIVACY/data-classification.md) - PII/PHI boundaries
+- [DSAR Process](PRIVACY/dsar-process.md) - Data subject access requests
+- [DPIA Template](PRIVACY/dpia-template.md) - Privacy impact assessments
+- [Evidence Collection Plan](compliance/evidence-plan.md) - Audit automation
+- [Risk Register](compliance/risk-register.md) - Top 10 business/technical risks
 
-## Operations & Development
-- [API Documentation](api/README.md)
-- [Developer Onboarding](developer-onboarding.md)
-- [Runbooks Index](runbooks/README.md)
-- [Smoke E2E Testing](ops/smoke-e2e.md)
-- [Documentation Style Guide](STYLE.md)
+## Security & Operations
+- [Security Training](security/training.md) - Role-based training requirements
+- [Bug Bounty Program](security/bug-bounty.md) - Vulnerability disclosure
+- [Observability](ops/observability.md) - Monitoring and SLO queries
+- [Rollback SOP](ops/rollback-sop.md) - Emergency deployment procedures
+- [Backup & Restore](ops/backup-restore.md) - Data recovery procedures
+- [Capacity Planning](ops/capacity-planning.md) - Scaling and cost optimization
+- [Smoke E2E Testing](ops/smoke-e2e.md) - Nightly validation procedures
 
-## Communications
-- [Incident Templates](comms/incident-templates.md)
-- [Executive Summary](executive-summary.md)
+## Product & Development
+- [API Documentation](api/README.md) - REST API reference and examples
+- [Issuer UX Microcopy](ux/issuer-microcopy.md) - User interface text
+- [Verifier UX Microcopy](ux/verifier-microcopy.md) - Error states and recovery
+- [Developer Onboarding](developer-onboarding.md) - New developer setup
+- [Documentation Style Guide](STYLE.md) - Writing standards
 
-## Technical Specifications
-- [ZKP Circuit Template](zkp/circuit-spec-template.md)
+## Technical Architecture
+- [ZKP Circuit Template](zkp/circuit-spec-template.md) - Zero-knowledge proof specifications
+- [Incident Runbooks](incident-runbooks/key-compromise.md) - Emergency procedures
+
+## Business & Strategy
+- [Executive Summary](executive-summary.md) - Platform overview and roadmap
+- [Tokenomics Whitepaper](tokenomics/whitepaper-lite.md) - VITA token economics
+- [Incident Communication Templates](comms/incident-templates.md)
+
+## Operations Index
+- [Runbooks Index](runbooks/README.md) - All operational procedures
+
+---
+
+**Last Updated**: 2025-09-26
+**Total Documents**: 50+ comprehensive guides and references
+**Owners**: See individual documents for specific team ownership
+**Status**: ✅ Complete MVP documentation suite
