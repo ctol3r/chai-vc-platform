@@ -4,7 +4,7 @@ generated-by: Claude 2025-09-26T00:00:00Z
 ## Setup
 ```bash
 ./scripts/ensure_repo_root.sh
-npm install --legacy-peer-deps
+npm install
 cd backend && npm run build && npm test
 cd frontend && npm run dev
 # Backend on :3000, Frontend on :3001

@@ -1,6 +1,5 @@
 const fs = require('fs');
 const solc = require('solc');
-const { ContractFactory, JsonRpcProvider } = require('ethers');
 
 async function compileContract() {
   const source = fs.readFileSync('contracts/CredentialRegistry.sol', 'utf8');
@@ -17,6 +16,7 @@ async function compileContract() {
 }
 
 async function main() {
+  const { ContractFactory, JsonRpcProvider } = await import('ethers');
   const { abi, bytecode } = await compileContract();
   const provider = new JsonRpcProvider('http://127.0.0.1:8545');
   const deployer = await provider.getSigner(0);

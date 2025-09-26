@@ -12,8 +12,8 @@ Get developers productive on Chai VC Platform in <5 minutes with exact commands 
 # Ensure repo root
 if [ -x ./scripts/ensure_repo_root.sh ]; then ./scripts/ensure_repo_root.sh; else ROOT="$(git rev-parse --show-toplevel 2>/dev/null || true)"; [ -n "$ROOT" ] && cd "$ROOT" || (while [ ! -f package.json ] && [ "$PWD" != "/" ]; do cd ..; done); fi
 
-# Install with legacy peer deps (temporary for build compatibility)
-npm install --legacy-peer-deps
+# Install dependencies
+npm install
 ```
 
 ### 2. Backend Build & Test
@@ -52,7 +52,7 @@ npm run ci-smoke
 - **Build Issues**: @devops
 
 ## Risks/Notes
-- `--legacy-peer-deps` is temporary fix for dependency conflicts
+- Ensure you're running Node.js 18 or 20 per CI matrix
 - Backend tests require local database setup (see .env.example)
 - Verifier tests may require mock blockchain connection
 - Remove legacy flag after dependency audit in next sprint
@@ -60,4 +60,4 @@ npm run ci-smoke
 **Quick Debug:**
 - Build fails → Check Node.js version (18+)
 - Tests fail → Check database connection in .env
-- Install fails → Clear `node_modules` and retry with legacy flag
+- Install fails → Clear `node_modules` and retry `npm install`

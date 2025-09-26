@@ -9,7 +9,7 @@ generated-by: Claude 2025-09-26T00:00:00Z
 
 ## Core Platform
 - [AGENTS.md](../AGENTS.md) - AI agent usage and capabilities
-- [Agent Approvals](AGENT_APPROVALS.md) + [Automation Rules](../.agents/approvals.yaml)
+- [Agent Approvals](AGENT_APPROVALS.md) + [Automation Rules](../.agents/approvals.yaml) — Auto/Human/Legal guardrails
 - [Security Runbook](SECURITY_RUNBOOK.md) - Incident response procedures
 - [Privacy & Data Retention](PRIVACY/data-retention-erasure-policy.md)
 - [SOC2 Artifacts](soc2-artifacts.md) - Compliance evidence inventory
@@ -17,7 +17,7 @@ generated-by: Claude 2025-09-26T00:00:00Z
 - [Reviewers](REVIEWERS.md) - Team assignments and contacts
 
 ## Governance & Process
-- [Release Process](RELEASE_PROCESS.md) - Version control and deployment
+- [Release Process](RELEASE_PROCESS.md) - Cut, tag, deploy, rollback checklist
 - [Labels Policy](labels.md) - GitHub label standards
 - [Merge Policy](merge_policy.md) - PR approval requirements
 - [Triage SOP](triage.md) - Issue and PR response procedures
@@ -43,13 +43,14 @@ generated-by: Claude 2025-09-26T00:00:00Z
 - [Rollback SOP](ops/rollback-sop.md) - Emergency deployment procedures
 - [Backup & Restore](ops/backup-restore.md) - Data recovery procedures
 - [Capacity Planning](ops/capacity-planning.md) - Scaling and cost optimization
-- [Smoke E2E Testing](ops/smoke-e2e.md) - Nightly validation procedures
+- [Smoke E2E Testing](ops/smoke-e2e.md) - CI interpretation, artifacts, escalation
 
 ## Product & Development
-- [API Documentation](api/README.md) - REST API reference and examples
+- [API Documentation](api/README.md) - REST API curl examples & health checks
 - [Issuer UX Microcopy](ux/issuer-microcopy.md) - User interface text
 - [Verifier UX Microcopy](ux/verifier-microcopy.md) - Error states and recovery
-- [Developer Onboarding](developer-onboarding.md) - New developer setup
+- [Developer Onboarding](developer-onboarding.md) - Historical onboarding notes
+- [Developer Onboarding Guide](dev-onboarding-guide.md) - Step-by-step setup & gate script
 - [Documentation Style Guide](STYLE.md) - Writing standards
 
 ## Technical Architecture

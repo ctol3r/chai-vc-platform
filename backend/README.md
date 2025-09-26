@@ -2,12 +2,12 @@
 
 ## Node/Deps
 - Node 20.x (or the version in CI)
-- Install (local dev): `npm install --legacy-peer-deps` (temporary until ethers/hardhat align)
+- Install (local dev): `npm install`
 
 ## Build & Test
 ```bash
 cd backend
-npm install --legacy-peer-deps
+npm install
 npm run build
 npm test -- --runInBand
 ```

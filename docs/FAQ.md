@@ -10,7 +10,7 @@ git clone https://github.com/your-org/chai-vc-platform.git
 cd chai-vc-platform
 
 # Install dependencies
-npm install --legacy-peer-deps
+npm install
 
 # Start development servers
 cd backend && npm run dev &
@@ -172,9 +172,9 @@ curl https://api.chai-vc.com/health
 
 ### 19. Common issues and solutions
 
-**"Legacy peer deps" error:**
+**Dependency resolution error:**
 ```bash
-npm install --legacy-peer-deps
+npm install
 ```
 
 **Database connection error:**
@@ -190,7 +190,7 @@ echo $DATABASE_URL
 ```bash
 # Clean install
 rm -rf node_modules package-lock.json
-npm install --legacy-peer-deps
+npm install
 
 # Reset test database
 npm run db:test:reset

@@ -13,7 +13,7 @@ export default app;
 export async function startServer() {
   await startApolloServer(app, prisma);
   const port = process.env.PORT || 4000;
-  if (!process.env.JEST_WORKER_ID) {
+  if (!process.env.JEST_WORKER_ID && process.env.NODE_ENV !== 'test') {
     app.listen(port, () => {
       console.log(`Server ready at http://localhost:${port}/graphql`);
     });
@@ -21,6 +21,6 @@ export async function startServer() {
 }
 
 // If this module is executed directly, start the server
-if (require.main === module && !process.env.JEST_WORKER_ID) {
+if (require.main === module && !process.env.JEST_WORKER_ID && process.env.NODE_ENV !== 'test') {
   startServer();
 }

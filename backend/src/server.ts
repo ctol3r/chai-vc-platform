@@ -8,7 +8,7 @@ async function main() {
   await startApolloServer(app, prisma);
 
   const port = process.env.PORT || 4000;
-  if (!process.env.JEST_WORKER_ID) {
+  if (!process.env.JEST_WORKER_ID && process.env.NODE_ENV !== 'test') {
     app.listen(port, () => {
       console.log(`Server ready at http://localhost:${port}/graphql`);
     });

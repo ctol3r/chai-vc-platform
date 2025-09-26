@@ -1,21 +1,47 @@
-generated-by: Claude 2025-09-26T00:00:00Z
+generated-by: Codex 2025-09-26T00:00:00Z
 # Agent Approvals — Human Overview
 
-## Purpose
-Define what Codex/Claude can do without approval vs. what needs human/legal review.
+## AUTO (no human approval required)
+### Codex
+- `tests:add`
+- `tests:edit`
+- `docs:add`
+- `scripts:add_nonprod`
+- `ci:config_nonprod`
+- `types:shim_with_todo`
 
-## Auto-Apply (no human approval)
-- Codex: tests, dev scripts, docs, formatting, CI config (non-prod), TS shims with TODO tickets.
-- Claude: docs in docs/, draft runbooks, checklists, PR templates.
+### Claude
+- `docs:add_update`
+- `runbooks:add_update`
+- `checklists:generate`
+- `pr:templates`
 
-## Human-Required
-- Runtime behavior changes (APIs, DB schema, on-chain code), secrets/keys, prod infra, token contracts, legal-facing docs.
+## HUMAN REVIEW REQUIRED
+### Codex → human reviewer: `@backend-team`
+- `runtime:api_change`
+- `db:schema_or_migration`
+- `infra:prod`
+- `crypto:onchain_or_keys`
+- `deps:major_change_prod`
 
-## Legal-Required
-- Privacy policy updates, public T&Cs, tokenomics legal positioning, CA ADS/CO AI statements.
+### Claude → human reviewer: `@legal-compliance`
+- `compliance:public_artifacts`
+- `privacy:policy_text`
+- `legal:tokenomics_or_ads`
 
-## Escalation
-- `security`, `PHI-risk` labels stop merges and notify @legal-compliance + @backend-team.
+## LEGAL SIGN-OFF
+Items flagged `privacy:*` or `legal:*` require final approval from `@legal-compliance` even after technical review. Loop them in via the PR reviewers list and Slack `#legal-compliance`.
 
-## Kill-switch
-- `scripts/agent_kill_switch` (contains STOP_AGENTS=1) halts agents.
+## ESCALATION GUARDRAILS
+- Applying `security` or `PHI-risk` labels blocks merge and auto-pings `@legal-compliance` + `@backend-team`.
+- If an agent hits a restricted path, notify the reviewers above and pause automation until resolved.
+
+## KILL SWITCH
+- Path: `scripts/agent_kill_switch`
+- Contents: `STOP_AGENTS=1`
+- Commit & push the change to halt agents immediately.
+
+## MERGE SAFEGUARDS
+- Protected branches: `main`
+- Required label on agent-authored PRs: `approved-by`
+- Ensure reviewers listed above are assigned before merge.
