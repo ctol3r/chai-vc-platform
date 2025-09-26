@@ -1,0 +1,247 @@
+# SOC2 Evidence Collection Configuration
+# CHAI•VITALCV Healthcare Credentialing Platform
+
+evidence_storage:
+  base_path: "/var/soc2-evidence"
+  retention_days: 2555  # 7 years
+  encryption_enabled: true
+  backup_enabled: true
+
+# AWS Configuration
+aws_profile: "chai-vc-production"
+aws_region: "us-west-2"
+
+# Database Configuration
+database:
+  host: "chai-vc-postgres.cluster-xyz.us-west-2.rds.amazonaws.com"
+  port: 5432
+  name: "chai_vc_platform"
+  user: "audit_readonly"
+  # Password via environment variable: DB_PASSWORD
+
+# Kubernetes Configuration
+kubernetes:
+  config_path: "/home/audit/.kube/config"
+  namespace: "chai-vc-production"
+
+# Monitoring Configuration
+prometheus:
+  url: "https://prometheus.chai-vc.internal"
+  auth_token_env: "PROMETHEUS_TOKEN"
+
+grafana:
+  url: "https://grafana.chai-vc.internal"
+  auth_token_env: "GRAFANA_TOKEN"
+
+# Logging Configuration
+elasticsearch:
+  host: "elasticsearch.chai-vc.internal"
+  port: 9200
+  index_prefix: "chai-vc-logs"
+  auth_enabled: true
+  username: "audit_user"
+  password_env: "ELASTICSEARCH_PASSWORD"
+
+# Evidence Collection Schedules
+collection_schedules:
+  daily:
+    - security_monitoring
+    - availability_metrics
+    - processing_logs
+
+  weekly:
+    - access_reviews
+    - configuration_snapshots
+    - vulnerability_scans
+
+  monthly:
+    - compliance_reports
+    - risk_assessments
+    - incident_summaries
+
+# Trust Services Criteria Mapping
+tsc_mappings:
+  security:
+    - CC6.1  # Logical and Physical Access Controls
+    - CC6.2  # System Operation
+    - CC6.3  # Unauthorized Access
+    - CC6.6  # Data Transmission and Disposal
+    - CC6.7  # Confidentiality
+    - CC6.8  # Privacy
+
+  availability:
+    - CC7.1  # Availability and Operation
+    - CC7.2  # System Failures
+    - CC7.3  # Monitoring and Incident Response
+    - CC7.4  # Data Backup and Recovery
+
+  processing_integrity:
+    - CC8.1  # Data Processing
+
+  confidentiality:
+    - CC6.7  # Information Access
+
+  privacy:
+    - CC6.8  # Personal Information Collection and Use
+
+# Control Evidence Requirements
+control_evidence:
+  CC6.1:
+    - iam_policies_and_roles
+    - user_access_reviews
+    - privileged_access_logs
+    - rbac_configurations
+    - database_user_permissions
+    - ssh_key_management
+
+  CC6.2:
+    - security_monitoring_alerts
+    - intrusion_detection_logs
+    - vulnerability_scan_results
+    - security_incident_reports
+    - log_monitoring_configurations
+
+  CC6.3:
+    - failed_login_attempts
+    - account_lockout_logs
+    - unauthorized_access_attempts
+    - security_awareness_training_records
+
+  CC6.6:
+    - data_classification_policies
+    - data_retention_schedules
+    - secure_disposal_certificates
+    - encryption_configurations
+
+  CC6.7:
+    - encryption_at_rest_configs
+    - encryption_in_transit_configs
+    - key_management_procedures
+    - key_rotation_logs
+
+  CC6.8:
+    - privacy_impact_assessments
+    - data_subject_request_logs
+    - consent_management_logs
+    - data_minimization_evidence
+
+  CC7.1:
+    - uptime_monitoring_reports
+    - sla_compliance_metrics
+    - capacity_planning_documents
+    - performance_benchmarks
+
+  CC7.2:
+    - system_failure_logs
+    - disaster_recovery_test_results
+    - business_continuity_plans
+    - failover_procedures
+
+  CC7.3:
+    - incident_response_procedures
+    - monitoring_alert_configurations
+    - escalation_procedures
+    - incident_post_mortems
+
+  CC7.4:
+    - backup_schedules_and_logs
+    - restore_test_results
+    - backup_storage_locations
+    - recovery_time_objectives
+
+  CC8.1:
+    - data_validation_procedures
+    - processing_controls_documentation
+    - data_integrity_checks
+    - error_handling_procedures
+
+# Notification Settings
+notifications:
+  email:
+    enabled: true
+    recipients:
+      - "compliance@chai-vc.com"
+      - "security@chai-vc.com"
+      - "audit@chai-vc.com"
+
+  slack:
+    enabled: true
+    webhook_url_env: "SLACK_WEBHOOK_URL"
+    channel: "#soc2-compliance"
+
+# Compliance Reporting
+reporting:
+  formats:
+    - json
+    - csv
+    - pdf
+
+  schedules:
+    daily_summary: "0 8 * * *"    # 8 AM daily
+    weekly_report: "0 9 * * 1"    # 9 AM Monday
+    monthly_report: "0 10 1 * *"  # 10 AM first of month
+
+  recipients:
+    - role: "CISO"
+      email: "ciso@chai-vc.com"
+      reports: ["weekly", "monthly"]
+
+    - role: "Compliance Officer"
+      email: "compliance@chai-vc.com"
+      reports: ["daily", "weekly", "monthly"]
+
+    - role: "External Auditor"
+      email: "auditor@external-firm.com"
+      reports: ["monthly"]
+      access_level: "read_only"
+
+# Data Classification
+data_classification:
+  levels:
+    - name: "Public"
+      retention_days: 365
+      encryption_required: false
+
+    - name: "Internal"
+      retention_days: 1095  # 3 years
+      encryption_required: true
+
+    - name: "Confidential"
+      retention_days: 2555  # 7 years
+      encryption_required: true
+
+    - name: "Restricted"
+      retention_days: 2555  # 7 years
+      encryption_required: true
+      additional_controls: ["access_logging", "dlp"]
+
+# Integration Settings
+integrations:
+  pagerduty:
+    enabled: true
+    api_key_env: "PAGERDUTY_API_KEY"
+    service_id: "PXXXXXX"
+
+  jira:
+    enabled: true
+    url: "https://chai-vc.atlassian.net"
+    username: "soc2-automation"
+    api_token_env: "JIRA_API_TOKEN"
+    project_key: "COMPLIANCE"
+
+  github:
+    enabled: true
+    org: "chai-vc"
+    token_env: "GITHUB_TOKEN"
+    repos:
+      - "chai-vc-platform"
+      - "chai-vc-contracts"
+      - "chai-vc-infrastructure"
+
+# Audit Trail Configuration
+audit_trail:
+  enabled: true
+  storage_location: "s3://chai-vc-audit-logs"
+  encryption_key_id: "arn:aws:kms:us-west-2:123456789012:key/12345678-1234-1234-1234-123456789012"
+  integrity_checking: true
+  tamper_detection: true

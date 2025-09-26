@@ -1,0 +1,11 @@
+name: Rust Pallets CI
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with: toolchain: stable
+      - run: cargo build --manifest-path pallets/Cargo.toml
