@@ -89,3 +89,81 @@ export async function getCredentialStatus(
 
   return { status: await checkCredentialStatus(id) };
 }
+
+interface PresentationRequest {
+  credentialId: string;
+  vpToken: string;
+  nonce: string;
+  audience: string;
+}
+
+// Track used nonces to prevent replay attacks (in production this would be in Redis/DB)
+const usedNonces = new Set<string>();
+
+export async function verifyPresentation(
+  request: PresentationRequest
+): Promise<{ status: CredentialStatus; details?: unknown }> {
+  const { credentialId, vpToken, nonce, audience } = request;
+
+  // Check for replay attack
+  if (usedNonces.has(nonce)) {
+    return {
+      status: 'unknown',
+      details: { error: 'Nonce already used (replay attack)' }
+    };
+  }
+
+  // Validate nonce format (basic validation)
+  if (nonce.length < 16) {
+    return {
+      status: 'unknown',
+      details: { error: 'Invalid nonce format' }
+    };
+  }
+
+  // Validate audience (mock validation)
+  if (!audience.includes('chai-vc')) {
+    return {
+      status: 'unknown',
+      details: { error: 'Invalid audience' }
+    };
+  }
+
+  try {
+    // Mark nonce as used
+    usedNonces.add(nonce);
+
+    // Mock privacy adapter call
+    const verification = await privacyClient.verifyProof({
+      credential: { id: credentialId, token: vpToken },
+      proof: { nonce, audience }
+    });
+
+    if (verification.valid) {
+      return {
+        status: 'valid',
+        details: {
+          verified: true,
+          credentialId,
+          nonce,
+          audience,
+          timestamp: new Date().toISOString()
+        }
+      };
+    }
+
+    return {
+      status: 'unknown',
+      details: {
+        verified: false,
+        reason: verification.reason,
+        ...verification.details
+      }
+    };
+  } catch (err) {
+    return {
+      status: 'unknown',
+      details: { error: err instanceof Error ? err.message : String(err) }
+    };
+  }
+}

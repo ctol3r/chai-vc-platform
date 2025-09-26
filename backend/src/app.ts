@@ -5,6 +5,9 @@ import { validateRequest } from './middleware/validateRequest';
 import { errorHandler } from './middleware/errorHandler';
 import metricsRoutes from './routes/metrics_routes';
 import { router as verifierRoutes } from './routes/verifier_routes';
+import { router as issuerRoutes } from './routes/issuer_routes';
+import { router as statusRoutes } from './routes/status_routes';
+import { router as healthRoutes } from './routes/health_routes';
 
 const app = express();
 
@@ -25,6 +28,9 @@ app.post(
 // Route registration
 app.use('/api', metricsRoutes);
 app.use('/api', verifierRoutes);
+app.use('/api', issuerRoutes);
+app.use('/api', statusRoutes);
+app.use('/', healthRoutes);
 
 app.use(errorHandler);
 

@@ -112,7 +112,7 @@ export class PolkadotService {
     return this.api;
   }
 
-  protected async signAndAwait(
+  public async signAndAwait(
     extrinsic: SubmittableExtrinsicLike,
     signer: KeyringPair,
   ): Promise<SubmittableResult> {
