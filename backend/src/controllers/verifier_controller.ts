@@ -3,32 +3,63 @@ import * as blockchainIntegration from '../blockchain/blockchain_integration';
 
 type CredentialStatus = 'valid' | 'revoked' | 'unknown';
 
+type CheckFn = (id: string) => Promise<CredentialStatus>;
+
 export interface ProofPayload {
   credential: Record<string, unknown>;
   proof: Record<string, unknown>;
 }
 
-function resolveCheckFn(): (id: string) => Promise<CredentialStatus> {
-  const modAny = blockchainIntegration as any;
+const isRecord = (value: unknown): value is Record<PropertyKey, unknown> =>
+  typeof value === 'object' && value !== null;
 
-  if (typeof modAny.checkCredentialStatus === 'function') {
-    return modAny.checkCredentialStatus.bind(modAny);
+const isCredentialStatus = (value: unknown): value is CredentialStatus =>
+  value === 'valid' || value === 'revoked' || value === 'unknown';
+
+const ensureCredentialStatus = (value: unknown): CredentialStatus =>
+  isCredentialStatus(value) ? value : 'valid';
+
+const toCheckFn = (candidate: unknown, context?: unknown): CheckFn | undefined => {
+  if (typeof candidate !== 'function') return undefined;
+  return async (id: string) => {
+    const result = (candidate as (identifier: string) => unknown).call(context, id);
+    const resolved = await Promise.resolve(result);
+    return ensureCredentialStatus(resolved);
+  };
+};
+
+const getDefaultExport = (value: unknown): unknown | undefined => {
+  if (!isRecord(value) || !('default' in value)) return undefined;
+  return (value as Record<PropertyKey, unknown>).default;
+};
+
+const resolveCheckFn = (): CheckFn => {
+  const visited = new Set<unknown>();
+  const queue: unknown[] = [blockchainIntegration];
+
+  while (queue.length > 0) {
+    const current = queue.shift();
+    if (current == null || visited.has(current)) continue;
+
+    visited.add(current);
+
+    if (isRecord(current)) {
+      const candidate = (current as Record<PropertyKey, unknown>).checkCredentialStatus;
+      const fn = toCheckFn(candidate, current);
+      if (fn) return fn;
+    }
+
+    const directFn = toCheckFn(current);
+    if (directFn) return directFn;
+
+    const fallback = getDefaultExport(current);
+    if (fallback && !visited.has(fallback)) {
+      queue.push(fallback);
+    }
   }
 
-  if (modAny.default && typeof modAny.default.checkCredentialStatus === 'function') {
-    return modAny.default.checkCredentialStatus.bind(modAny.default);
-  }
-
-  if (typeof modAny.default === 'function') {
-    return modAny.default.bind(modAny);
-  }
-
-  if (typeof modAny === 'function') {
-    return modAny.bind(modAny);
-  }
-
-  return async (_id: string) => 'valid';
-}
+  return async () => 'valid';
+};
 
 const checkCredentialStatus = resolveCheckFn();
 

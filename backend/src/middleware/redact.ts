@@ -1,24 +1,62 @@
 import { Request, Response, NextFunction } from 'express';
 
-// naive redactor - improve with a proper library if needed
-const SECRET_KEYS = ['password','secret','token','apikey','authorization','auth','iv','payloadenc'];
+const SECRET_KEYS = [
+  'password',
+  'secret',
+  'token',
+  'apikey',
+  'authorization',
+  'auth',
+  'iv',
+  'payloadenc',
+] as const;
 
-export function redact(obj: any): any {
-  if (obj === null || typeof obj !== 'object') return obj;
-  if (Array.isArray(obj)) return obj.map(redact);
-  const out: any = {};
-  for (const [k,v] of Object.entries(obj)) {
-    if (SECRET_KEYS.includes(k.toLowerCase())) { out[k] = '[redacted]'; }
-    else { out[k] = redact(v); }
+type JsonPrimitive = string | number | boolean | null;
+type JsonValue = JsonPrimitive | JsonArray | JsonObject;
+type JsonArray = JsonValue[];
+type JsonObject = { [key: string]: JsonValue };
+
+type SafeLogPayload = {
+  method: string;
+  url: string;
+  body?: unknown;
+  q?: unknown;
+};
+
+interface RequestWithSafeLog extends Request {
+  __safeLog?: SafeLogPayload;
+}
+
+const isPlainObject = (value: unknown): value is JsonObject =>
+  Object.prototype.toString.call(value) === '[object Object]';
+
+export const redact = (value: unknown): unknown => {
+  if (Array.isArray(value)) {
+    return (value as JsonArray).map((item) => redact(item)) as JsonArray;
   }
-  return out;
-}
 
-export function redactLogs(req: Request, _res: Response, next: NextFunction) {
+  if (isPlainObject(value)) {
+    const entries = Object.entries(value).map(([key, entryValue]) => {
+      if (SECRET_KEYS.includes(key.toLowerCase())) {
+        return [key, '[redacted]'];
+      }
+      return [key, redact(entryValue)];
+    });
+
+    return Object.fromEntries(entries) as JsonObject;
+  }
+
+  return value;
+};
+
+export const redactLogs = (req: Request, _res: Response, next: NextFunction): void => {
+  const requestWithSafeLog = req as RequestWithSafeLog;
   try {
-    const body = (req as any).body ? redact((req as any).body) : undefined;
-    const q = req.query ? redact(req.query) : undefined;
-    (req as any).__safeLog = { method: req.method, url: req.url, body, q };
-  } catch { /* ignore */ }
+    const body = typeof req.body === 'undefined' ? undefined : redact(req.body);
+    const query = req.query ? redact(req.query) : undefined;
+    requestWithSafeLog.__safeLog = { method: req.method, url: req.url, body, q: query };
+  } catch {
+    requestWithSafeLog.__safeLog = { method: req.method, url: req.url };
+  }
   next();
-}
+};
