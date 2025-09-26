@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 
-const SECRET_KEYS = [
+const SECRET_KEYS = new Set([
   'password',
   'secret',
   'token',
@@ -9,7 +9,7 @@ const SECRET_KEYS = [
   'auth',
   'iv',
   'payloadenc',
-] as const;
+]);
 
 type JsonPrimitive = string | number | boolean | null;
 type JsonValue = JsonPrimitive | JsonArray | JsonObject;
@@ -37,7 +37,7 @@ export const redact = (value: unknown): unknown => {
 
   if (isPlainObject(value)) {
     const entries = Object.entries(value).map(([key, entryValue]) => {
-      if (SECRET_KEYS.includes(key.toLowerCase())) {
+      if (SECRET_KEYS.has(key.toLowerCase())) {
         return [key, '[redacted]'];
       }
       return [key, redact(entryValue)];
