@@ -12,6 +12,7 @@ import healthRoutes from './routes/health_routes';
 const app = express();
 
 app.use(express.json({ limit: '512kb' }));
+app.use('/api', healthRoutes);
 app.use(redactLogs);
 
 app.post(
