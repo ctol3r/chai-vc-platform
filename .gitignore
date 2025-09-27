@@ -28,3 +28,7 @@ cache/
 # Coverage reports
 backend/coverage/
 **/coverage/
+
+# local backups
+*.bak*
+
