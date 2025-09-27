@@ -7,7 +7,7 @@ import metricsRoutes from './routes/metrics_routes';
 import { router as verifierRoutes } from './routes/verifier_routes';
 import { router as issuerRoutes } from './routes/issuer_routes';
 import { router as statusRoutes } from './routes/status_routes';
-import { router as healthRoutes } from './routes/health_routes';
+import healthRoutes from './routes/health_routes';
 
 const app = express();
 
