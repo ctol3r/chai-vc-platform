@@ -9,16 +9,16 @@ const shouldForwardBody = (method?: string) => {
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const pathParam = req.query.path;
-  const suffix = Array.isArray(pathParam)
-    ? pathParam.join('/')
-    : typeof pathParam === 'string'
-      ? pathParam
-      : '';
-
-  const targetUrl = `${BACKEND}${suffix ? (suffix.startsWith('/') ? suffix : `/${suffix}`) : ''}`;
-
   try {
+    const pathParam = req.query.path;
+    const suffix = Array.isArray(pathParam)
+      ? pathParam.join('/')
+      : typeof pathParam === 'string'
+        ? pathParam
+        : '';
+
+    const targetUrl = `${BACKEND}${suffix ? (suffix.startsWith('/') ? suffix : `/${suffix}`) : ''}`;
+
     const upstream = await fetch(targetUrl, {
       method: req.method,
       headers: {
