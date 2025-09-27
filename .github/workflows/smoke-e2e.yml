@@ -1,0 +1,22 @@
+name: smoke-e2e
+on:
+  schedule: [{ cron: "0 3 * * *" }]
+  workflow_dispatch:
+  pull_request:
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node
+        uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - name: Backend install
+        run: npm ci --legacy-peer-deps
+        working-directory: backend
+      - name: Build
+        run: npm run build
+        working-directory: backend
+      - name: Smoke E2E
+        run: npx jest --config=jest.config.cjs -t "@smoke-e2e" --runInBand
+        working-directory: backend

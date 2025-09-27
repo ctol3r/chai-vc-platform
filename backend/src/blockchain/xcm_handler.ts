@@ -1,9 +1,17 @@
-import { ApiPromise, SubmittableExtrinsic } from '@polkadot/api';
+import type { ApiPromise } from '@polkadot/api';
 import { Keyring } from '@polkadot/keyring';
 
 export interface ChaiCredentialMessage {
   credentialId: string;
   payload: string;
+}
+
+interface RemarkEvent {
+  event: {
+    section: string;
+    method: string;
+    data: unknown[];
+  };
 }
 
 /**
@@ -13,22 +21,26 @@ export interface ChaiCredentialMessage {
  * service that already initialises an ApiPromise instance.
  */
 export class XcmHandler {
-  constructor(private api: ApiPromise) {}
+  constructor(private readonly api: ApiPromise) {}
 
   /**
    * Sends a CHAI credential message to another parachain using a
    * remark-based XCM. This example uses a simple remark extrinsic but
    * can be replaced with a more sophisticated XCM format.
    */
-  async sendCredential(destParaId: number, message: ChaiCredentialMessage, signerSeed: string): Promise<void> {
+  async sendCredential(
+    destParaId: number,
+    message: ChaiCredentialMessage,
+    signerSeed: string,
+    options: Record<string, unknown> = {},
+  ): Promise<void> {
     const keyring = new Keyring({ type: 'sr25519' });
     const signer = keyring.addFromUri(signerSeed);
 
-    // Construct a remark payload that other parachains can parse.
     const remark = `CHAI:${destParaId}:${JSON.stringify(message)}`;
-    const tx: SubmittableExtrinsic<'promise'> = this.api.tx.system.remark(remark);
+    const tx = this.api.tx.system.remark(remark);
 
-    await tx.signAndSend(signer);
+    await tx.signAndSend(signer, options);
   }
 
   /**
@@ -37,11 +49,12 @@ export class XcmHandler {
    * invoked with the originating parachain id and parsed message.
    */
   listenForCredentials(onMessage: (paraId: number, message: ChaiCredentialMessage) => void): void {
-    this.api.query.system.events((events) => {
+    this.api.query.system.events((records: unknown) => {
+      const events = (records as RemarkEvent[]) ?? [];
       events.forEach(({ event }) => {
         if (event.section === 'system' && event.method === 'Remarked') {
-          const [account, data] = event.data as unknown as [string, string];
-          const text = data.toString();
+          const [, data] = event.data;
+          const text = data != null ? data.toString() : '';
           if (text.startsWith('CHAI:')) {
             const [, paraId, payload] = text.split(':');
             try {
@@ -58,4 +71,3 @@ export class XcmHandler {
 }
 
 export default XcmHandler;
-
