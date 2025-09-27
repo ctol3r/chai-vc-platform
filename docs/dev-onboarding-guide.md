@@ -42,13 +42,48 @@ curl http://localhost:4000/readyz | jq '.status'
 ```
 Leave the server running in a separate terminal.
 
-## 3. Frontend Setup (optional for API work)
+## 3. Run Frontend + Backend Together
+
+### Start Both Services
 ```bash
-cd ../frontend
+# Terminal 1: Backend Server (required first)
+cd backend
+npm run dev
+# ✅ Backend running on http://localhost:4000
+
+# Terminal 2: Frontend Server
+cd frontend
 npm install
 npm run dev
+# ✅ Frontend running on http://localhost:3000
 ```
-Frontend is available at `http://localhost:3000`.
+
+### Verify Full Stack
+```bash
+# Test backend health directly
+curl http://localhost:4000/healthz
+
+# Test frontend proxy to backend
+curl http://localhost:3000/api/healthz
+
+# Both should return: {"status": "healthy", "service": "chai-vc-backend", ...}
+```
+
+### Access MVP Pages
+- **Verifier Testing**: http://localhost:3000/verify
+- **Credential Issuance**: http://localhost:3000/issuer
+- **Health/Metrics**: http://localhost:3000/ops
+
+### Environment Configuration
+Frontend connects to backend via `NEXT_PUBLIC_BACKEND_URL`:
+```bash
+# Default (development)
+NEXT_PUBLIC_BACKEND_URL=http://localhost:4000
+
+# Override if backend runs on different port
+export NEXT_PUBLIC_BACKEND_URL=http://localhost:4001
+cd frontend && npm run dev
+```
 
 ## 4. Gate Script & Local Quality Checks
 These commands mirror the CI gates—run them before opening a PR:
