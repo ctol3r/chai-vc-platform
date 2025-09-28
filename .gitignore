@@ -18,3 +18,17 @@ cache/
 /target/
 **/target/
 /substrate/pallet-state-board/target/
+
+# Python/Node virtual envs
+**/.venv/
+.venv/
+# TypeScript build artefacts
+**/.tsbuildinfo
+
+# Coverage reports
+backend/coverage/
+**/coverage/
+
+# local backups
+*.bak*
+

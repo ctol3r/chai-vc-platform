@@ -1,0 +1,26 @@
+
+> chai-vc-platform-backend@1.0.0 build
+> tsc
+
+src/blockchain/blockchain_integration.ts(4,34): error TS2724: '"ethers"' has no exported member named 'providers'. Did you mean 'Provider'?
+src/blockchain/evm_erc721_wrapper.ts(1,61): error TS2724: '"ethers"' has no exported member named 'providers'. Did you mean 'Provider'?
+src/blockchain/evm_erc721_wrapper.ts(16,43): error TS2345: Argument of type 'ContractInterface' is not assignable to parameter of type 'Interface | InterfaceAbi'.
+  Type 'ContractInterface' is missing the following properties from type 'Interface': #private, fragments, deploy, fallback, and 31 more.
+src/blockchain/evm_erc721_wrapper.ts(23,5): error TS2322: Type 'BaseContract' is not assignable to type 'Contract'.
+  Type 'BaseContract' is not assignable to type 'Omit<ContractInterface, keyof BaseContract>'.
+    Index signature for type 'string' is missing in type 'BaseContract'.
+src/blockchain/evm_erc721_wrapper.ts(55,5): error TS2322: Type 'string' is not assignable to type 'BaseContractMethod<any[], any, any>'.
+src/blockchain/evm_erc721_wrapper.ts(56,5): error TS2322: Type 'string' is not assignable to type 'BaseContractMethod<any[], any, any>'.
+src/blockchain/evm_erc721_wrapper.ts(57,5): error TS2322: Type 'string' is not assignable to type 'BaseContractMethod<any[], any, any>'.
+src/blockchain/evm_erc721_wrapper.ts(58,5): error TS2322: Type 'string' is not assignable to type 'BaseContractMethod<any[], any, any>'.
+src/blockchain/evm_erc721_wrapper.ts(59,5): error TS2322: Type 'string' is not assignable to type 'BaseContractMethod<any[], any, any>'.
+src/blockchain/explainability_logger.ts(11,17): error TS2554: Expected 1 arguments, but got 0.
+src/blockchain/explainability_logger.ts(14,17): error TS2339: Property 'anchorData' does not exist on type 'PolkadotService'.
+src/blockchain/ocean_marketplace.ts(1,10): error TS2724: '"@oceanprotocol/lib"' has no exported member named 'Ocean'. Did you mean 'VeOcean'?
+src/blockchain/ocean_marketplace.ts(1,25): error TS2305: Module '"@oceanprotocol/lib"' has no exported member 'Account'.
+src/blockchain/ocean_marketplace.ts(1,34): error TS2305: Module '"@oceanprotocol/lib"' has no exported member 'Asset'.
+src/blockchain/ocean_marketplace.ts(52,14): error TS2339: Property 'buy' does not exist on type 'Datatoken'.
+src/blockchain/polkadot_service.ts(44,5): error TS2740: Type 'U8aFixed' is missing the following properties from type 'SubmittableResult': events, status, txHash, isCompleted, and 6 more.
+src/blockchain/polkadot_service.ts(66,5): error TS2740: Type 'U8aFixed' is missing the following properties from type 'SubmittableResult': events, status, txHash, isCompleted, and 6 more.
+src/blockchain/xcm_handler.ts(1,22): error TS2305: Module '"@polkadot/api"' has no exported member 'SubmittableExtrinsic'.
+src/services/credential.service.ts(1,24): error TS2305: Module '"@prisma/client"' has no exported member 'CredentialStatus'.

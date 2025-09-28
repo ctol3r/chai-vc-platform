@@ -1,9 +1,12 @@
-import { ApolloServer, gql } from 'apollo-server-express';
-import { Express } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { ApolloServer } from '@apollo/server';
+import { expressMiddleware } from '@apollo/server/express4';
+import { json, type Express } from 'express';
+import type { PrismaClient } from '@prisma/client';
+
+type GraphQLContext = { prisma: PrismaClient };
 
 // Comprehensive GraphQL schema integrating Express Apollo Server with Prisma
-const typeDefs = gql`
+const typeDefs = `
   type User {
     id: ID!
     name: String!
@@ -57,18 +60,25 @@ const typeDefs = gql`
 
 const resolvers = {
   Query: {
-    credentials: async (_parent: unknown, _args: unknown, ctx: { prisma: PrismaClient }) => {
+    credentials: async (_parent: unknown, _args: unknown, ctx: GraphQLContext) => {
       return ctx.prisma.credential.findMany();
     },
   },
 };
 
-export async function startApolloServer(app: Express, prisma: PrismaClient) {
-  const server = new ApolloServer({
+export async function startApolloServer(app: Express, prisma: PrismaClient): Promise<void> {
+  const server = new ApolloServer<GraphQLContext>({
     typeDefs,
     resolvers,
-    context: () => ({ prisma }),
   });
+
   await server.start();
-  server.applyMiddleware({ app });
+
+  app.use(
+    '/graphql',
+    json(),
+    expressMiddleware(server, {
+      context: async (): Promise<GraphQLContext> => ({ prisma }),
+    }),
+  );
 }

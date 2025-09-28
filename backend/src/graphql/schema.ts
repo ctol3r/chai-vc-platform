@@ -1,4 +1,4 @@
-import { gql } from 'apollo-server';
+import gql from 'graphql-tag';
 import * as credentialController from '../controllers/credential_controller';
 
 export const typeDefs = gql`

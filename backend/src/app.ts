@@ -1,11 +1,19 @@
 import express, { Request, Response } from 'express';
 import { body } from 'express-validator';
+import { redactLogs } from './middleware/redact';
 import { validateRequest } from './middleware/validateRequest';
 import { errorHandler } from './middleware/errorHandler';
+import metricsRoutes from './routes/metrics_routes';
+import { router as verifierRoutes } from './routes/verifier_routes';
+import { router as issuerRoutes } from './routes/issuer_routes';
+import { router as statusRoutes } from './routes/status_routes';
+import healthRoutes from './routes/health_routes';
 
 const app = express();
 
-app.use(express.json());
+app.use(express.json({ limit: '512kb' }));
+app.use('/api', healthRoutes);
+app.use(redactLogs);
 
 app.post(
   '/credentials',
@@ -17,6 +25,13 @@ app.post(
     res.json({ message: 'Credential created' });
   }
 );
+
+// Route registration
+app.use('/api', metricsRoutes);
+app.use('/api', verifierRoutes);
+app.use('/api', issuerRoutes);
+app.use('/api', statusRoutes);
+app.use('/', healthRoutes);
 
 app.use(errorHandler);
 

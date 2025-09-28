@@ -1,0 +1,34 @@
+{
+  "openapi": "3.0.3",
+  "info": { "title": "VITALCV MVP API", "version": "0.1.0" },
+  "paths": {
+    "/verifier/credential/{id}/status": {
+      "get": {
+        "summary": "Get credential status",
+        "parameters": [{ "in": "path", "name": "id", "schema": { "type": "string" }, "required": true }],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/verifier/presentation": {
+      "post": {
+        "summary": "Verify presentation (OID4VP dev-stub)",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object" } } } },
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/issuer/credential": {
+      "post": {
+        "summary": "Issue credential (OID4VCI dev-stub)",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object" } } } },
+        "responses": { "201": { "description": "Created" } }
+      }
+    },
+    "/status/{id}": {
+      "get": {
+        "summary": "Get credential status by ID",
+        "parameters": [{ "in": "path", "name": "id", "schema": { "type": "string" }, "required": true }],
+        "responses": { "200": { "description": "OK" } }
+      }
+    }
+  }
+}

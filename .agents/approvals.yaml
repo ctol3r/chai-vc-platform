@@ -1,0 +1,39 @@
+generated-by: Claude: 2025-09-26T00:00:00Z
+version: 1
+agents:
+  codex:
+    auto:
+      - tests:add
+      - tests:edit
+      - docs:add
+      - scripts:add_nonprod
+      - ci:config_nonprod
+      - types:shim_with_todo
+    requires_human:
+      - runtime:api_change
+      - db:schema_or_migration
+      - infra:prod
+      - crypto:onchain_or_keys
+      - deps:major_change_prod
+    reviewers:
+      - "@backend-team"
+  claude:
+    auto:
+      - docs:add_update
+      - runbooks:add_update
+      - checklists:generate
+      - pr:templates
+    requires_human:
+      - compliance:public_artifacts
+      - privacy:policy_text
+      - legal:tokenomics_or_ads
+    reviewers:
+      - "@legal-compliance"
+kill_switch:
+  path: "scripts/agent_kill_switch"
+  content: "STOP_AGENTS=1"
+merge:
+  protected_branches:
+    - main
+  require_labels:
+    - "approved-by"

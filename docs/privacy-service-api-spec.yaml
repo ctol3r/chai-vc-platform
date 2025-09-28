@@ -1,0 +1,656 @@
+openapi: 3.0.3
+info:
+  title: Chai VC Platform Privacy Service API
+  description: |
+    Privacy-preserving credential verification service with zero-knowledge proof capabilities.
+
+    This service enables privacy-preserving verification of healthcare credentials without
+    revealing sensitive information. It supports selective disclosure, zero-knowledge proofs,
+    and secure key management for healthcare credentialing workflows.
+
+    ## Key Features
+    - Zero-knowledge proof generation and verification
+    - Selective disclosure of credential attributes
+    - Hardware-backed key management
+    - HIPAA-compliant data handling
+    - Audit trail generation
+
+  version: 1.0.0
+  contact:
+    name: Chai VC Platform Team
+    url: https://github.com/chai-vc-platform
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://privacy.chai-vc.com/v1
+    description: Production server
+  - url: https://privacy-staging.chai-vc.com/v1
+    description: Staging server
+  - url: http://localhost:5000/v1
+    description: Local development server
+
+security:
+  - BearerAuth: []
+  - ApiKeyAuth: []
+
+paths:
+  /prove:
+    post:
+      summary: Generate Zero-Knowledge Proof
+      description: |
+        Generate a zero-knowledge proof for a credential or set of credentials.
+        The proof allows verification of specific attributes without revealing
+        the underlying credential data.
+      operationId: generateProof
+      tags:
+        - Proof Generation
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProofRequest'
+            examples:
+              medical_license_proof:
+                summary: Medical License Verification
+                value:
+                  credentialId: "cred_12345"
+                  proofType: "selective_disclosure"
+                  disclosureAttributes:
+                    - "license_type"
+                    - "expiration_date"
+                    - "issuing_authority"
+                  challenge: "nonce_xyz789"
+                  context: "hospital_verification_flow"
+              age_verification:
+                summary: Age Verification (Over 21)
+                value:
+                  credentialId: "cred_67890"
+                  proofType: "range_proof"
+                  predicate:
+                    attribute: "age"
+                    operator: "gte"
+                    value: 21
+                  challenge: "nonce_abc123"
+      responses:
+        '200':
+          description: Proof generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProofResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /verify:
+    post:
+      summary: Verify Zero-Knowledge Proof
+      description: |
+        Verify a zero-knowledge proof against the original credential requirements.
+        Returns verification status and validated attributes without exposing
+        sensitive credential data.
+      operationId: verifyProof
+      tags:
+        - Proof Verification
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerificationRequest'
+            examples:
+              verify_medical_license:
+                summary: Verify Medical License Proof
+                value:
+                  proof: "zk_proof_data_here"
+                  challenge: "nonce_xyz789"
+                  verificationKey: "verification_key_data"
+                  context: "hospital_verification_flow"
+                  expectedAttributes:
+                    - "license_type"
+                    - "expiration_date"
+      responses:
+        '200':
+          description: Proof verification completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerificationResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /keyinfo:
+    get:
+      summary: Get Public Key Information
+      description: |
+        Retrieve public key information and cryptographic parameters
+        needed for proof verification. This endpoint provides the public
+        keys and system parameters without exposing private key material.
+      operationId: getKeyInfo
+      tags:
+        - Key Management
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: keyId
+          in: query
+          description: Specific key identifier to retrieve
+          schema:
+            type: string
+            example: "key_12345"
+        - name: purpose
+          in: query
+          description: Key usage purpose
+          schema:
+            type: string
+            enum: [signing, verification, encryption, proof_generation]
+            example: "verification"
+        - name: format
+          in: query
+          description: Key format for response
+          schema:
+            type: string
+            enum: [jwk, pem, raw]
+            default: jwk
+      responses:
+        '200':
+          description: Key information retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KeyInfoResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /health:
+    get:
+      summary: Health Check
+      description: Service health and status check
+      operationId: healthCheck
+      tags:
+        - System
+      security: []
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '503':
+          description: Service unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /metrics:
+    get:
+      summary: Service Metrics
+      description: Prometheus-compatible metrics endpoint
+      operationId: getMetrics
+      tags:
+        - System
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Metrics data
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: |
+                  # HELP privacy_proofs_generated_total Total number of proofs generated
+                  privacy_proofs_generated_total 1234
+                  # HELP privacy_proofs_verified_total Total number of proofs verified
+                  privacy_proofs_verified_total 5678
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+  schemas:
+    ProofRequest:
+      type: object
+      required:
+        - credentialId
+        - proofType
+        - challenge
+      properties:
+        credentialId:
+          type: string
+          description: Unique identifier of the credential to prove
+          example: "cred_12345"
+        proofType:
+          type: string
+          enum:
+            - selective_disclosure
+            - range_proof
+            - membership_proof
+            - non_membership_proof
+          description: Type of zero-knowledge proof to generate
+        disclosureAttributes:
+          type: array
+          items:
+            type: string
+          description: Attributes to selectively disclose
+          example: ["license_type", "expiration_date"]
+        predicate:
+          $ref: '#/components/schemas/Predicate'
+        challenge:
+          type: string
+          description: Cryptographic challenge/nonce for proof
+          example: "nonce_xyz789"
+        context:
+          type: string
+          description: Context or domain for the proof
+          example: "hospital_verification_flow"
+        options:
+          $ref: '#/components/schemas/ProofOptions'
+
+    ProofResponse:
+      type: object
+      required:
+        - proofId
+        - proof
+        - proofType
+        - timestamp
+      properties:
+        proofId:
+          type: string
+          description: Unique identifier for the generated proof
+          example: "proof_98765"
+        proof:
+          type: string
+          description: Base64-encoded zero-knowledge proof data
+          example: "eyJwcm9vZiI6IjB4YWJjZGVmLi4uIn0="
+        proofType:
+          type: string
+          enum:
+            - selective_disclosure
+            - range_proof
+            - membership_proof
+            - non_membership_proof
+        publicInputs:
+          type: object
+          description: Public inputs used in proof generation
+          additionalProperties: true
+        verificationKey:
+          type: string
+          description: Public verification key for the proof
+        timestamp:
+          type: string
+          format: date-time
+          description: Timestamp when proof was generated
+        expiresAt:
+          type: string
+          format: date-time
+          description: Expiration time for the proof
+        metadata:
+          $ref: '#/components/schemas/ProofMetadata'
+
+    VerificationRequest:
+      type: object
+      required:
+        - proof
+        - challenge
+      properties:
+        proof:
+          type: string
+          description: Base64-encoded proof to verify
+          example: "eyJwcm9vZiI6IjB4YWJjZGVmLi4uIn0="
+        challenge:
+          type: string
+          description: Original challenge used in proof generation
+          example: "nonce_xyz789"
+        verificationKey:
+          type: string
+          description: Public verification key
+        context:
+          type: string
+          description: Verification context
+          example: "hospital_verification_flow"
+        expectedAttributes:
+          type: array
+          items:
+            type: string
+          description: Expected attributes to be proven
+        publicInputs:
+          type: object
+          description: Public inputs for verification
+          additionalProperties: true
+
+    VerificationResponse:
+      type: object
+      required:
+        - verified
+        - timestamp
+      properties:
+        verified:
+          type: boolean
+          description: Whether the proof is valid
+          example: true
+        timestamp:
+          type: string
+          format: date-time
+          description: Verification timestamp
+        provenAttributes:
+          type: object
+          description: Attributes that were successfully proven
+          additionalProperties: true
+          example:
+            license_type: "MD"
+            expiration_date: "2025-12-31"
+        errors:
+          type: array
+          items:
+            type: string
+          description: Verification errors if any
+        auditTrail:
+          $ref: '#/components/schemas/AuditEntry'
+
+    KeyInfoResponse:
+      type: object
+      required:
+        - keyId
+        - publicKey
+        - keyType
+      properties:
+        keyId:
+          type: string
+          description: Unique key identifier
+          example: "key_12345"
+        publicKey:
+          type: object
+          description: Public key in requested format
+          additionalProperties: true
+        keyType:
+          type: string
+          enum: [RSA, EC, BLS, BN254]
+          description: Cryptographic key type
+        curve:
+          type: string
+          description: Elliptic curve for EC keys
+          example: "secp256k1"
+        purpose:
+          type: array
+          items:
+            type: string
+            enum: [signing, verification, encryption, proof_generation]
+          description: Intended key usage
+        createdAt:
+          type: string
+          format: date-time
+          description: Key creation timestamp
+        expiresAt:
+          type: string
+          format: date-time
+          description: Key expiration timestamp
+        algorithm:
+          type: string
+          description: Cryptographic algorithm
+          example: "ECDSA"
+        parameters:
+          type: object
+          description: Algorithm-specific parameters
+          additionalProperties: true
+
+    Predicate:
+      type: object
+      description: Predicate for range/comparison proofs
+      required:
+        - attribute
+        - operator
+        - value
+      properties:
+        attribute:
+          type: string
+          description: Attribute to compare
+          example: "age"
+        operator:
+          type: string
+          enum: [eq, ne, gt, gte, lt, lte, in, nin]
+          description: Comparison operator
+        value:
+          oneOf:
+            - type: string
+            - type: number
+            - type: array
+              items: {}
+          description: Value to compare against
+
+    ProofOptions:
+      type: object
+      properties:
+        includeTimestamp:
+          type: boolean
+          default: true
+          description: Include timestamp in proof
+        bindToContext:
+          type: boolean
+          default: true
+          description: Bind proof to specific context
+        auditLevel:
+          type: string
+          enum: [none, basic, detailed]
+          default: basic
+          description: Level of audit information to include
+
+    ProofMetadata:
+      type: object
+      properties:
+        credentialType:
+          type: string
+          description: Type of credential being proven
+          example: "medical_license"
+        issuer:
+          type: string
+          description: Credential issuer
+          example: "State Medical Board"
+        schema:
+          type: string
+          description: Credential schema version
+          example: "v1.2.0"
+        revocationRegistry:
+          type: string
+          description: Revocation registry identifier
+
+    AuditEntry:
+      type: object
+      properties:
+        action:
+          type: string
+          description: Action performed
+          example: "proof_verification"
+        timestamp:
+          type: string
+          format: date-time
+          description: Action timestamp
+        userId:
+          type: string
+          description: User who performed the action
+        ipAddress:
+          type: string
+          description: IP address of request
+        userAgent:
+          type: string
+          description: User agent string
+        metadata:
+          type: object
+          additionalProperties: true
+          description: Additional audit metadata
+
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - timestamp
+      properties:
+        status:
+          type: string
+          enum: [healthy, unhealthy]
+          example: "healthy"
+        timestamp:
+          type: string
+          format: date-time
+        version:
+          type: string
+          example: "1.0.0"
+        dependencies:
+          type: object
+          properties:
+            database:
+              type: string
+              enum: [healthy, unhealthy]
+            keystore:
+              type: string
+              enum: [healthy, unhealthy]
+            blockchain:
+              type: string
+              enum: [healthy, unhealthy]
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          description: Error code
+          example: "INVALID_PROOF"
+        message:
+          type: string
+          description: Human-readable error message
+          example: "The provided proof is invalid or corrupted"
+        details:
+          type: object
+          additionalProperties: true
+          description: Additional error details
+        requestId:
+          type: string
+          description: Unique request identifier for tracing
+          example: "req_12345"
+        timestamp:
+          type: string
+          format: date-time
+
+  responses:
+    BadRequest:
+      description: Invalid request parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "BAD_REQUEST"
+            message: "Missing required parameter: credentialId"
+            requestId: "req_12345"
+            timestamp: "2025-09-25T10:00:00Z"
+
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "UNAUTHORIZED"
+            message: "Valid authentication token required"
+            requestId: "req_12345"
+            timestamp: "2025-09-25T10:00:00Z"
+
+    Forbidden:
+      description: Insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "FORBIDDEN"
+            message: "Insufficient permissions to access this credential"
+            requestId: "req_12345"
+            timestamp: "2025-09-25T10:00:00Z"
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "NOT_FOUND"
+            message: "Credential not found: cred_12345"
+            requestId: "req_12345"
+            timestamp: "2025-09-25T10:00:00Z"
+
+    UnprocessableEntity:
+      description: Request validation failed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "VALIDATION_FAILED"
+            message: "Invalid proof type specified"
+            details:
+              field: "proofType"
+              allowedValues: ["selective_disclosure", "range_proof"]
+            requestId: "req_12345"
+            timestamp: "2025-09-25T10:00:00Z"
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "INTERNAL_ERROR"
+            message: "An unexpected error occurred"
+            requestId: "req_12345"
+            timestamp: "2025-09-25T10:00:00Z"
+
+tags:
+  - name: Proof Generation
+    description: Zero-knowledge proof generation endpoints
+  - name: Proof Verification
+    description: Proof verification and validation endpoints
+  - name: Key Management
+    description: Public key and cryptographic parameter management
+  - name: System
+    description: System health and monitoring endpoints

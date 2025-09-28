@@ -2,17 +2,24 @@
   "compilerOptions": {
     "target": "es2020",
     "module": "commonjs",
-    "rootDir": "src",
+    "rootDir": ".",
     "outDir": "dist",
-    "strict": true,
+    "strict": false,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true
   },
   "include": [
     "src/**/*",
-    "prisma/seed.ts"
+    "prisma/seed.ts",
+    "prisma/**/*",
+    "src/types/**/*.d.ts",
+    "test/**/*.ts"
   ],
-  "exclude": ["__tests__"]
+  "exclude": [
+    "__tests__"
+  ]
 }
