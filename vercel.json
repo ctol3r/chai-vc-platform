@@ -1,0 +1,31 @@
+{
+  "version": 2,
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "installCommand": "npm ci --legacy-peer-deps || npm install",
+  "outputDirectory": ".next",
+  "rootDirectory": "frontend",
+  "build": {
+    "env": {
+      "NODE_VERSION": "22.x"
+    }
+  },
+  "features": {
+    "skipBuilds": true,
+    "includeFilesOutsideRootDirectory": true,
+    "prioritizeProductionBuilds": true,
+    "concurrentBuilds": true
+  },
+  "builds": [
+    {
+      "src": "frontend/next.config.js",
+      "use": "@vercel/next"
+    }
+  ],
+  "functions": {
+    "api/**/*.js": {
+      "memory": 8192,
+      "maxDuration": 60
+    }
+  }
+}
