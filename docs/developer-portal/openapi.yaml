@@ -1,0 +1,97 @@
+openapi: 3.0.0
+info:
+  title: VitalCV API
+  description: API for the VitalCV platform, providing credential verification and management.
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:4000
+    description: Local development server
+
+paths:
+  /verifier/credential/{credentialId}/status:
+    get:
+      summary: Get Credential Status
+      description: Retrieves the status of a specific credential by its ID.
+      parameters:
+        - name: credentialId
+          in: path
+          required: true
+          description: The ID of the credential to check.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  credentialId:
+                    type: string
+                    example: '12345'
+                  status:
+                    type: string
+                    example: 'verified'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: 'Unable to fetch credential status'
+
+  /credentials:
+    post:
+      summary: Create Credential
+      description: Creates a new credential. (Placeholder implementation)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: 'Medical License'
+                issuer:
+                  type: string
+                  example: 'did:example:12345'
+              required:
+                - name
+                - issuer
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'Credential created'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        message:
+                          type: string
+                        field:
+                          type: string
+                    example:
+                      - message: 'name must be a string'
+                        field: 'name'

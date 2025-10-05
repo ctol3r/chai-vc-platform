@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VitalCV API Documentation</title>
+  <style>
+    body { font-family: sans-serif; line-height: 1.6; padding: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background-color: #f2f2f2; }
+    code { background-color: #eee; padding: 2px 4px; border-radius: 4px; }
+    .endpoint { font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <h1>VitalCV API Documentation</h1>
+  <p>Welcome to the developer documentation for the VitalCV API. Below is a list of available endpoints and examples of how to use them.</p>
+  <p>You can also view the full OpenAPI specification <a href="/developers/openapi.yaml">here</a>.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Method</th>
+        <th>Endpoint</th>
+        <th>Description</th>
+        <th>cURL Example</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code class="endpoint">GET</code></td>
+        <td><code>/verifier/credential/{credentialId}/status</code></td>
+        <td>Retrieves the status of a specific credential by its ID.</td>
+        <td><code>curl http://localhost:4000/verifier/credential/123/status</code></td>
+      </tr>
+      <tr>
+        <td><code class="endpoint">POST</code></td>
+        <td><code>/credentials</code></td>
+        <td>Creates a new credential. (Placeholder implementation)</td>
+        <td><code>curl -X POST http://localhost:4000/credentials -H "Content-Type: application/json" -d '{"name": "Medical License", "issuer": "did:example:123"}'</code></td>
+      </tr>
+    </tbody>
+  </table>
+
+</body>
+</html>
