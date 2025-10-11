@@ -41,3 +41,9 @@ node_modules/
 
 # coverage output
 backend/coverage/
+coverage/
+compliance/evidence-binder-v1/
+
+# Coverage output
+coverage/
+backend/coverage/
