@@ -14,15 +14,17 @@
 
 ## Summary
 - Added OIDC4VCI router + controller with metadata + pre-authorized code/token endpoints.
-- Implemented in-memory `PreAuthorizedCodeService` with nonce binding & replay protection stub.
+- Extended pre-authorized flow with PKCE verifier enforcement, nonce registry, replay detection.
+- Added grant_type validation, access-token minting stub, and c_nonce expiry tracking.
 - Updated express app wiring; new contract tests cover happy path + failure scenarios.
 
 ## Tests
 - `cd backend && npx jest --coverage --runTestsByPath __tests__/oidc4vci.test.ts`
-- Coverage: `controllers/oidc4vci_controller.ts` 92% lines; `services/preAuthorizedCodeService.ts` 87.5% lines.
+- Coverage: `controllers/oidc4vci_controller.ts` 92% lines; `services/preAuthorizedCodeService.ts` 79.59% lines.
 
 ## Risk Notes
 - Service storage is in-memory only; follow-up required for persistent cache/DB.
+- PKCE support currently limited to `S256` or `plain`; consider hardening to S256 only.
 - Lint/type gates pending full CI invocation.
 
 CI: local jest (subset)

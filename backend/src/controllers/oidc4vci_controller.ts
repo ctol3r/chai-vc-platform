@@ -26,17 +26,24 @@ export function createPreAuthorizedCode(req: Request, res: Response): void {
     res.status(400).json({ errors: errors.array() });
     return;
   }
-  const { client_id: clientId, wallet_nonce: walletNonce } = req.body as {
+  const { client_id: clientId, wallet_nonce: walletNonce, code_challenge: codeChallenge, code_challenge_method: codeChallengeMethod } = req.body as {
     client_id: string;
     wallet_nonce: string;
+    code_challenge: string;
+    code_challenge_method?: 'S256' | 'plain';
   };
-  const { preAuthorizedCode, cNonce, expiresIn } = preAuthorizedCodeService.issue({ clientId, walletNonce });
+  const { preAuthorizedCode, cNonce, expiresIn, cNonceExpiresIn } = preAuthorizedCodeService.issue({
+    clientId,
+    walletNonce,
+    codeChallenge,
+    codeChallengeMethod,
+  });
   res.json({
     pre_authorized_code: preAuthorizedCode,
     expires_in: expiresIn,
     interval: 1,
     c_nonce: cNonce,
-    c_nonce_expires_in: expiresIn,
+    c_nonce_expires_in: cNonceExpiresIn,
   });
 }
 
@@ -46,16 +53,18 @@ export function redeemPreAuthorizedCode(req: Request, res: Response): void {
     res.status(400).json({ errors: errors.array() });
     return;
   }
-  const { pre_authorized_code: code, wallet_nonce: walletNonce } = req.body as {
+  const { pre_authorized_code: code, wallet_nonce: walletNonce, code_verifier: codeVerifier, grant_type: grantType } = req.body as {
     pre_authorized_code: string;
     wallet_nonce: string;
+    code_verifier: string;
+    grant_type: string;
   };
   try {
-    const { cNonce } = preAuthorizedCodeService.redeem(code, walletNonce);
+    const { cNonce, accessToken, expiresIn } = preAuthorizedCodeService.redeem(code, walletNonce, codeVerifier, grantType);
     res.json({
-      access_token: `stub-${code}`,
+      access_token: accessToken,
       token_type: 'bearer',
-      expires_in: 600,
+      expires_in: expiresIn,
       c_nonce: cNonce,
       c_nonce_expires_in: 300,
       scope: 'openid',
