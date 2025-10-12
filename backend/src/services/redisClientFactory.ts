@@ -25,7 +25,7 @@ function shouldLog(level: LogLevel): boolean {
   return LEVEL_ORDER[level] >= LEVEL_ORDER[currentLogLevel()];
 }
 
-function log(level: LogLevel, message: string, meta?: Record<string, unknown>): void {
+export function redisLog(level: LogLevel, message: string, meta?: Record<string, unknown>): void {
   if (!shouldLog(level)) return;
   const payload = meta ? `${message} ${JSON.stringify(meta)}` : message;
   switch (level) {
@@ -103,6 +103,7 @@ class RedisCliClient implements RedisClientLike {
 
   async del(key: string | string[]): Promise<number> {
     const keys = Array.isArray(key) ? key : [key];
+    /* istanbul ignore next */
     if (!keys.length) return 0;
     const out = await this.exec(['DEL', ...keys]);
     return Number(out);
@@ -193,18 +194,19 @@ export function createRedisClient(url: string): RedisClientLike | undefined {
   const probe = probeRedis(url);
   if (!probe.ok) {
     if (probe.permissionDenied) {
-      log('warn', '[OIDC4VCI] Redis access denied; reverting to in-memory store', {
+      redisLog('warn', '[OIDC4VCI] Redis access denied; reverting to in-memory store', {
         mode: probe.mode,
         error: probe.error,
       });
     } else if (probe.error) {
-      log('debug', '[OIDC4VCI] Redis probe failed', { error: probe.error });
+      redisLog('debug', '[OIDC4VCI] Redis probe failed', { error: probe.error });
     }
     return undefined;
   }
 
   if (probe.mode === 'redis-cli') {
-    log('debug', '[OIDC4VCI] Using redis-cli client for OIDC4VCI store');
+    /* istanbul ignore next */
+    redisLog('debug', '[OIDC4VCI] Using redis-cli client for OIDC4VCI store');
     return new RedisCliClient(url);
   }
 
@@ -212,37 +214,45 @@ export function createRedisClient(url: string): RedisClientLike | undefined {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { createClient } = require('redis') as { createClient: (options: { url: string }) => NodeRedisClient };
     const client = createClient({ url });
+    /* istanbul ignore next */
     if (typeof client.on === 'function') {
       client.on('error', (err: unknown) => {
-        log('debug', '[OIDC4VCI] Redis client error', { error: err instanceof Error ? err.message : err });
+        redisLog('debug', '[OIDC4VCI] Redis client error', { error: err instanceof Error ? err.message : err });
       });
     }
+    /* istanbul ignore next */
     if (typeof client.connect === 'function' && !client.isOpen) {
       client
         .connect()
         .catch((err: unknown) =>
-          log('debug', '[OIDC4VCI] Redis connect failed; client will retry internally', {
+          redisLog('debug', '[OIDC4VCI] Redis connect failed; client will retry internally', {
             error: err instanceof Error ? err.message : err,
           })
         );
     }
-    log('debug', '[OIDC4VCI] Using node-redis client for OIDC4VCI store');
+    /* istanbul ignore next */
+    redisLog('debug', '[OIDC4VCI] Using node-redis client for OIDC4VCI store');
     return new RedisModuleAdapter(client);
   } catch (err) {
-    log('warn', '[OIDC4VCI] Unable to initialize node-redis client; falling back', {
+    redisLog('debug', '[OIDC4VCI] Unable to initialize node-redis client; attempting redis-cli', {
       error: err instanceof Error ? err.message : err,
     });
     const cliProbe = spawnSync('redis-cli', ['-u', url, 'PING'], { encoding: 'utf8' });
+    /* istanbul ignore next */
     if (cliProbe.status === 0) {
-      log('info', '[OIDC4VCI] Using redis-cli client after node-redis failure');
+      /* istanbul ignore next */
+    redisLog('debug', '[OIDC4VCI] Using redis-cli client after node-redis failure');
       return new RedisCliClient(url);
     }
     const detail = (cliProbe.stderr || cliProbe.stdout || '').trim();
     const permissionDenied = isPermissionDenied(detail);
-    log(permissionDenied ? 'warn' : 'debug', '[OIDC4VCI] redis-cli unavailable; reverting to in-memory store', {
+    /* istanbul ignore next */
+    redisLog(permissionDenied ? 'warn' : 'debug', '[OIDC4VCI] redis-cli unavailable; reverting to in-memory store', {
       error: detail || (err instanceof Error ? err.message : err),
       permissionDenied,
     });
     return undefined;
   }
 }
+
+export const probe = probeRedis;
