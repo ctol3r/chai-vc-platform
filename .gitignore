@@ -55,3 +55,7 @@ backend/coverage/
 # Coverage output
 coverage/
 backend/coverage/
+
+# Generated coverage
+coverage/
+backend/coverage/
