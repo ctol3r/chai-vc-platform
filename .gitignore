@@ -47,3 +47,7 @@ compliance/evidence-binder-v1/
 # Coverage output
 coverage/
 backend/coverage/
+
+# Coverage output
+coverage/
+backend/coverage/
