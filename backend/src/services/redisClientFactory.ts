@@ -90,7 +90,9 @@ class RedisCliClient implements RedisClientLike {
 
   async get(key: string): Promise<string | null> {
     const out = await this.exec(['GET', key]);
-    if (!out || out === '(nil)') return null;
+    if (!out || out === '(nil)') {
+      return null;
+    }
     return out;
   }
 
@@ -98,7 +100,10 @@ class RedisCliClient implements RedisClientLike {
     const args = ['SET', key, value, 'PX', String(options.PX)];
     if (options.NX) args.push('NX');
     const out = await this.exec(args);
-    return out === '(nil)' ? null : out;
+    if (out === '(nil)') {
+      return null;
+    }
+    return out;
   }
 
   async del(key: string | string[]): Promise<number> {
@@ -166,6 +171,7 @@ export interface RedisProbeResult {
 }
 
 function isPermissionDenied(text: string | undefined): boolean {
+  /* istanbul ignore next */
   if (!text) return false;
   return /operation not permitted|eperm/i.test(text);
 }

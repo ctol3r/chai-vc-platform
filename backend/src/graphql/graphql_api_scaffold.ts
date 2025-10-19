@@ -1,5 +1,5 @@
 import { ApolloServer, gql } from 'apollo-server-express';
-import { Express } from 'express';
+import express, { Router, Application } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { AuditScrapbook } from '../blockchain/audit_scrapbook';
 import { PolkadotService } from '../blockchain/polkadot_service';
@@ -59,15 +59,22 @@ const typeDefs = gql`
   }
 `;
 
-const polkadotService = new PolkadotService();
-const auditScrapbook = new AuditScrapbook(polkadotService);
+let polkadotService: PolkadotService | null = null;
+let auditScrapbook: AuditScrapbook | null = null;
+
+try {
+  polkadotService = new PolkadotService();
+  auditScrapbook = new AuditScrapbook(polkadotService);
+} catch (e) {
+  console.warn('PolkadotService initialization skipped:', e);
+}
 
 async function handleTrustRegistryMutation(
   action: 'authorize' | 'deauthorize',
   account: string
 ): Promise<boolean> {
   const trimmed = account.trim();
-  if (!trimmed) {
+  if (!trimmed || !polkadotService || !auditScrapbook) {
     return false;
   }
 
@@ -109,7 +116,20 @@ const resolvers = {
   },
 };
 
-export async function startApolloServer(app: Express, prisma: PrismaClient) {
+export async function buildGraphQLRouter(prisma: PrismaClient): Promise<Router> {
+  const router = express.Router();
+  const server = new ApolloServer({
+    typeDefs,
+    resolvers,
+    context: () => ({ prisma }),
+  });
+  await server.start();
+  server.applyMiddleware({ app: router as any, path: '/' });
+  router.get('/health', (_req, res) => res.json({ ok: true }));
+  return router;
+}
+
+export async function startApolloServer(app: any, prisma: PrismaClient) {
   const server = new ApolloServer({
     typeDefs,
     resolvers,

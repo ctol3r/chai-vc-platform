@@ -1,10 +1,11 @@
 import { Router } from 'express';
 import { body } from 'express-validator';
-import { createPreAuthorizedCode, issuerMetadata, redeemPreAuthorizedCode } from '../controllers/oidc4vci_controller';
+import { createPreAuthorizedCode, issuerMetadata, nonceResponse, redeemPreAuthorizedCode } from '../controllers/oidc4vci_controller';
 
 const router = Router();
 
 router.get('/.well-known/openid-credential-issuer', issuerMetadata);
+router.get('/oidc4vci/nonce', nonceResponse);
 
 router.post(
   '/oidc4vci/pre-authorized-code',
@@ -13,8 +14,8 @@ router.post(
   body('code_challenge').isString().withMessage('code_challenge required'),
   body('code_challenge_method')
     .optional()
-    .isIn(['S256', 'plain'])
-    .withMessage('code_challenge_method must be S256 or plain'),
+    .equals('S256')
+    .withMessage('code_challenge_method must be S256'),
   createPreAuthorizedCode
 );
 
@@ -28,6 +29,7 @@ router.post(
     .withMessage('grant_type required')
     .isIn(['urn:ietf:params:oauth:grant-type:pre-authorized_code'])
     .withMessage('grant_type must be pre-authorized_code'),
+  body('tx_code').optional().isString().withMessage('tx_code must be a string'),
   redeemPreAuthorizedCode
 );
 

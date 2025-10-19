@@ -65,4 +65,12 @@ export class PolkadotService {
   getSigningKey(_currentTime: number = Date.now()): string {
     return 'mock-signing-key';
   }
+
+  async tryAnchor(hash: string): Promise<void> {
+    try {
+      await this.issueCredential(hash);
+    } catch (e) {
+      console.warn('anchor_failed', { e });
+    }
+  }
 }

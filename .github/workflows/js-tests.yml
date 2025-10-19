@@ -30,3 +30,35 @@ jobs:
       - name: No frontend changes; skipping
         if: steps.changes.outputs.frontend != 'true'
         run: echo "No frontend changes in this PR."
+
+  backend-coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Detect backend changes
+        id: backend-changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            backend:
+              - backend/**
+              - scripts/enforce-coverage.mjs
+      - name: Install backend dependencies
+        if: steps.backend-changes.outputs.backend == 'true'
+        run: |
+          cd backend
+          npm install
+      - name: Run backend unit tests with coverage
+        if: steps.backend-changes.outputs.backend == 'true'
+        run: |
+          cd backend
+          npm test -- --coverage --coverageDirectory=../coverage
+      - name: Enforce coverage threshold
+        if: steps.backend-changes.outputs.backend == 'true'
+        run: node scripts/enforce-coverage.mjs 80
+      - name: No backend changes; skipping
+        if: steps.backend-changes.outputs.backend != 'true'
+        run: echo "No backend changes in this PR."

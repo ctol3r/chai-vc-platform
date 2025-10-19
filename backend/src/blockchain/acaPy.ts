@@ -1,37 +1,38 @@
 const ADMIN_BASE = process.env.ACA_PY_ADMIN_URL || 'http://aca-py:8021';
 const DEFAULT_TIMEOUT_MS = 1500;
 
-type ResponseLike = {
-  ok: boolean;
-  json(): Promise<unknown>;
-};
+type Json = Record<string, unknown>;
 
-type FetchImpl = (input: string, init?: Record<string, unknown>) => Promise<ResponseLike>;
-
-async function resolveFetch(): Promise<FetchImpl> {
-  const existing = (globalThis as unknown as { fetch?: unknown }).fetch;
-  if (typeof existing === 'function') {
-    return existing as FetchImpl;
-  }
-
-  const mod: unknown = await import('node-fetch');
-  const asModule = mod as { default?: FetchImpl };
-  return (asModule.default ?? (mod as FetchImpl)) as FetchImpl;
+export async function acapyPost<T extends Json>(
+  path: string,
+  body: Json,
+  opts?: { apiBase?: string; apiKey?: string }
+): Promise<T> {
+  const apiBase = opts?.apiBase ?? process.env.ACA_PY_URL ?? 'http://acapy:8031';
+  const res = await fetch(`${apiBase}${path}`, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      ...(opts?.apiKey ? { authorization: `Bearer ${opts.apiKey}` } : {})
+    },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(`acapy_error ${res.status}`);
+  return (await res.json()) as T;
 }
 
-async function postJson(path: string, payload: Record<string, unknown>): Promise<ResponseLike> {
-  const fetchFn = await resolveFetch();
+async function postJson(path: string, payload: Record<string, unknown>): Promise<Response> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
 
   try {
-    return await fetchFn(path, {
+    return await fetch(path, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(payload),
-      signal: controller.signal as unknown
+      signal: controller.signal
     });
   } finally {
     clearTimeout(timer);
