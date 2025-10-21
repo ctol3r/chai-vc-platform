@@ -1,14 +1,35 @@
 import { Router } from 'express';
-import { getCredentialStatus } from '../controllers/verifier_controller';
+import { getStore } from '../services/store';
+import { decodeJwt, verifySig } from '../services/jwt';
+import { record } from '../services/audit';
 
-export const router = Router();
+export const verifierRoutes = Router();
 
-router.get('/verifier/credential/:credentialId/status', async (req, res) => {
-  try {
-    const status = await getCredentialStatus(req.params.credentialId);
-    res.json({ credentialId: req.params.credentialId, status });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Unable to fetch credential status' });
+verifierRoutes.post('/verifier/presentation', async (req, res) => {
+  const jwt = req.body?.jwt as string | undefined;
+  if (!jwt) {
+    return res.status(400).json({ valid: false, reason: 'missing_jwt' });
   }
+
+  const sigOk = verifySig(jwt);
+  if (!sigOk) {
+    const decoded = decodeJwt(jwt);
+    const derivedId = decoded.credentialId || decoded.jti;
+    const auditRef = await record('verify', { credentialId: derivedId, status: 'BAD_SIG' });
+    return res.status(200).json({ valid: false, reason: 'bad_signature', auditRef, credentialId: derivedId });
+  }
+
+  const { jti, credentialId: cidFromPayload } = decodeJwt(jwt);
+  const credentialId = cidFromPayload || jti;
+  if (!credentialId) {
+    const auditRef = await record('verify', { credentialId: undefined, status: 'MALFORMED' });
+    return res.status(200).json({ valid: false, reason: 'bad_signature', auditRef });
+  }
+
+  const store = getStore();
+  const status = await store.getStatus(credentialId);
+  const valid = status === 'ACTIVE';
+  const reason = valid ? undefined : status.toLowerCase();
+  const auditRef = await record('verify', { credentialId, status });
+  return res.status(200).json({ valid, reason, auditRef, credentialId });
 });
