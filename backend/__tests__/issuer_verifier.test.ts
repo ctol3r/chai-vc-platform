@@ -7,6 +7,19 @@ import request from 'supertest';
 import app from '../src/server';
 import store from '../src/services/store';
 
+// Mock external services to avoid open handles
+jest.mock('../src/services/polkadot_service', () => ({
+  tryAnchor: jest.fn().mockResolvedValue(undefined),
+  hashJwt: jest.fn().mockReturnValue('mock-hash')
+}));
+
+jest.mock('../src/services/audit', () => ({
+  record: jest.fn().mockResolvedValue('audit-mock-ref'),
+  recordIssue: jest.fn().mockResolvedValue('audit-mock-ref'),
+  recordRevoke: jest.fn().mockResolvedValue('audit-mock-ref'),
+  recordVerify: jest.fn().mockResolvedValue('audit-mock-ref')
+}));
+
 describe('Issuer/Verifier Flow', () => {
   beforeEach(() => {
     // Clear store before each test
@@ -52,8 +65,11 @@ describe('Issuer/Verifier Flow', () => {
         .expect(400);
 
       expect(response.body).toEqual({
-        valid: false,
-        reason: 'missing_subject_id'
+        error: 'Validation failed',
+        details: [{
+          field: 'subject.id',
+          message: 'Invalid input: expected string, received undefined'
+        }]
       });
     });
   });
@@ -95,8 +111,11 @@ describe('Issuer/Verifier Flow', () => {
         .expect(400);
 
       expect(response.body).toEqual({
-        valid: false,
-        reason: 'missing_jwt'
+        error: 'Validation failed',
+        details: [{
+          field: 'jwt',
+          message: 'Invalid input: expected string, received undefined'
+        }]
       });
     });
 
@@ -150,8 +169,11 @@ describe('Issuer/Verifier Flow', () => {
         .expect(400);
 
       expect(response.body).toEqual({
-        valid: false,
-        reason: 'missing_credential_id'
+        error: 'Validation failed',
+        details: [{
+          field: 'credentialId',
+          message: 'Invalid input: expected string, received undefined'
+        }]
       });
     });
 
@@ -220,7 +242,8 @@ describe('Issuer/Verifier Flow', () => {
 
       expect(response.body).toEqual({
         ok: true,
-        service: 'backend'
+        service: 'backend',
+        timestamp: expect.any(String)
       });
     });
   });

@@ -8,6 +8,10 @@ set -e
 BASE_URL="http://localhost:4000"
 TEMP_DIR="/tmp"
 ISSUE_FILE="$TEMP_DIR/issue.json"
+RESULT_FILE="$TEMP_DIR/test-result.json"
+
+# Clean up previous results
+rm -f "$ISSUE_FILE" "$RESULT_FILE"
 
 echo "🚀 Starting VitalCV Pilot P0 API Smoke Test"
 echo "=============================================="
@@ -131,6 +135,9 @@ else
     echo "⚠️  FHIR Practitioner lookup may have failed, but continuing..."
 fi
 
+# Save results for CI
+echo '{"status":"success","timestamp":"'$(date -u +%Y-%m-%dT%H:%M:%SZ)'","cycle":"ISSUE→VERIFY→REVOKE→VERIFY RED (reason: revoked)"}' > "$RESULT_FILE"
+
 # Cleanup
 rm -f "$ISSUE_FILE"
 
@@ -142,5 +149,7 @@ echo "✅ All endpoints responding correctly"
 echo "✅ JWT handling working"
 echo "✅ Audit logging active"
 echo "✅ Non-blocking anchoring operational"
+echo ""
+echo "✅ ISSUE→VERIFY→REVOKE→VERIFY RED (reason: revoked)"
 echo ""
 echo "🚀 Ready for frontend MVP integration!"

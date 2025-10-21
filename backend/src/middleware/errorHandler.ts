@@ -1,20 +1,20 @@
 import { Request, Response, NextFunction } from 'express';
+import { logger } from '../services/logger';
 
-export interface HttpError extends Error {
-  status?: number;
-  errors?: any;
-}
+export function errorHandler(err: any, req: Request, res: Response, next: NextFunction) {
+  logger.error({
+    error: err.message,
+    stack: err.stack,
+    url: req.url,
+    method: req.method,
+    ip: req.ip
+  }, 'Unhandled error');
 
-export function errorHandler(
-  err: HttpError,
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
-  const status = err.status || 500;
-  const response: any = { message: err.message || 'Internal Server Error' };
-  if (err.errors) {
-    response.errors = err.errors;
-  }
-  res.status(status).json(response);
+  // Don't leak error details in production
+  const isDevelopment = process.env.NODE_ENV === 'development';
+  
+  res.status(err.status || 500).json({
+    error: err.message || 'Internal server error',
+    details: isDevelopment ? err.stack : undefined
+  });
 }

@@ -6,6 +6,8 @@
 import { Router, Request, Response } from 'express';
 import store from '../services/store';
 import { recordFhirLookup } from '../services/audit';
+import { validateParams, practitionerParamSchema } from '../middleware/validate';
+import { logger } from '../services/logger';
 
 const router = Router();
 
@@ -13,7 +15,7 @@ const router = Router();
  * GET /fhir/Practitioner/:id
  * Get FHIR R4 Practitioner resource for a subject ID
  */
-router.get('/Practitioner/:id', async (req: Request, res: Response) => {
+router.get('/Practitioner/:id', validateParams(practitionerParamSchema), async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     

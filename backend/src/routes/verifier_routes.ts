@@ -7,6 +7,8 @@ import { Router, Request, Response } from 'express';
 import store from '../services/store';
 import { decodeJwt, verifySig, isExpired } from '../services/jwt';
 import { recordVerify } from '../services/audit';
+import { validateBody, verifyPresentationSchema } from '../middleware/validate';
+import { logger } from '../services/logger';
 
 const router = Router();
 
@@ -18,7 +20,7 @@ interface VerifyPresentationRequest {
  * POST /verifier/presentation
  * Verify a credential presentation
  */
-router.post('/presentation', async (req: Request, res: Response) => {
+router.post('/presentation', validateBody(verifyPresentationSchema), async (req: Request, res: Response) => {
   try {
     const { jwt }: VerifyPresentationRequest = req.body;
     

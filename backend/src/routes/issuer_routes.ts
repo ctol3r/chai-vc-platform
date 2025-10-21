@@ -4,14 +4,17 @@
  */
 
 import { Router, Request, Response } from 'express';
-// Simple ID generator for pilot
-function generateId(): string {
-  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-}
 import store from '../services/store';
 import { createJwt, JwtPayload } from '../services/jwt';
 import { tryAnchor, hashJwt } from '../services/polkadot_service';
 import { recordIssue, recordRevoke } from '../services/audit';
+import { validateBody, issueCredentialSchema, revokeCredentialSchema } from '../middleware/validate';
+import { logger } from '../services/logger';
+
+// Simple ID generator for pilot
+function generateId(): string {
+  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+}
 
 const router = Router();
 
@@ -36,7 +39,7 @@ interface RevokeCredentialRequest {
  * POST /issuer/credential
  * Issue a new credential
  */
-router.post('/credential', async (req: Request, res: Response) => {
+router.post('/credential', validateBody(issueCredentialSchema), async (req: Request, res: Response) => {
   try {
     const { subject, validity }: IssueCredentialRequest = req.body;
     
@@ -116,7 +119,7 @@ router.post('/credential', async (req: Request, res: Response) => {
  * POST /issuer/revoke
  * Revoke a credential
  */
-router.post('/revoke', async (req: Request, res: Response) => {
+router.post('/revoke', validateBody(revokeCredentialSchema), async (req: Request, res: Response) => {
   try {
     const { credentialId }: RevokeCredentialRequest = req.body;
     

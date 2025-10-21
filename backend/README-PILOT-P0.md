@@ -53,10 +53,62 @@ npm run dev
 ./scripts/test-pilot-flow.sh
 ```
 
+#### Pilot P0 Smoke Test
+
+The smoke test validates the complete credential lifecycle:
+
+```bash
+# 1. Issue credential
+curl -X POST http://localhost:4000/issuer/credential \
+  -H "Content-Type: application/json" \
+  -d '{
+    "subject": {
+      "id": "test-practitioner-123",
+      "name": "Dr. Test Practitioner",
+      "licenseNumber": "MD123456",
+      "licenseState": "CA"
+    },
+    "validity": {
+      "from": "2024-01-01T00:00:00Z",
+      "until": "2026-01-01T00:00:00Z"
+    }
+  }'
+
+# Expected: {"credentialId":"cred-...","jwt":"eyJ...","auditRef":"issue-..."}
+
+# 2. Verify credential (should be valid)
+curl -X POST http://localhost:4000/verifier/presentation \
+  -H "Content-Type: application/json" \
+  -d '{"jwt":"eyJ..."}'
+
+# Expected: {"valid":true,"auditRef":"verify-...","credentialId":"cred-..."}
+
+# 3. Revoke credential
+curl -X POST http://localhost:4000/issuer/revoke \
+  -H "Content-Type: application/json" \
+  -d '{"credentialId":"cred-..."}'
+
+# Expected: {"ok":true,"credentialId":"cred-...","auditRef":"revoke-..."}
+
+# 4. Verify credential again (should be invalid)
+curl -X POST http://localhost:4000/verifier/presentation \
+  -H "Content-Type: application/json" \
+  -d '{"jwt":"eyJ..."}'
+
+# Expected: {"valid":false,"reason":"revoked","auditRef":"verify-...","credentialId":"cred-..."}
+```
+
+**Expected Final Result:**
+```
+✅ ISSUE→VERIFY→REVOKE→VERIFY RED (reason: revoked)
+```
+
 ## API Endpoints
 
-### Health Check
+### Health & Documentation
 - `GET /health` - Server health status
+- `GET /ready` - Service readiness check
+- `GET /api-docs` - Interactive API documentation (Swagger UI)
 
 ### Issuer Routes
 - `POST /issuer/credential` - Issue a new credential
@@ -137,9 +189,17 @@ curl -X POST http://localhost:4000/issuer/revoke \
 
 ## Environment Variables
 
+Copy `.env.example` to `.env` and configure:
+
 - `PORT`: Server port (default: 4000)
-- `JWT_SECRET`: JWT signing secret (default: pilot-development-secret-key)
 - `NODE_ENV`: Environment (test/development/production)
+- `CORS_ORIGIN`: Allowed CORS origin (default: http://localhost:3005)
+- `JWT_SECRET`: JWT signing secret (default: dev-only-change-in-production)
+- `LOG_LEVEL`: Logging level (default: info)
+- `NPI_TIMEOUT_MS`: NPI lookup timeout (default: 5000)
+- `NPI_CACHE_TTL_MS`: NPI cache TTL (default: 600000)
+- `RATE_LIMIT_WINDOW_MS`: Rate limit window (default: 60000)
+- `RATE_LIMIT_MAX_REQUESTS`: Max requests per window (default: 60)
 
 ## Testing
 

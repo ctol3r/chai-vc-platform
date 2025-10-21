@@ -6,6 +6,8 @@
 import { Router, Request, Response } from 'express';
 import fetch from 'node-fetch';
 import { recordNpiLookup } from '../services/audit';
+import { validateParams, npiParamSchema } from '../middleware/validate';
+import { logger } from '../services/logger';
 
 const router = Router();
 
@@ -17,7 +19,7 @@ const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
  * POST /lookup/npi/:npi
  * Lookup NPI information with timeout and caching
  */
-router.post('/npi/:npi', async (req: Request, res: Response) => {
+router.post('/npi/:npi', validateParams(npiParamSchema), async (req: Request, res: Response) => {
   try {
     const { npi } = req.params;
     
@@ -96,7 +98,7 @@ router.post('/npi/:npi', async (req: Request, res: Response) => {
  * GET /lookup/npi/:npi
  * Alternative GET endpoint for NPI lookup
  */
-router.get('/npi/:npi', async (req: Request, res: Response) => {
+router.get('/npi/:npi', validateParams(npiParamSchema), async (req: Request, res: Response) => {
   try {
     const { npi } = req.params;
     
