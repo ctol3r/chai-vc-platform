@@ -1,15 +1,6 @@
 import crypto from 'crypto';
 import { store } from '../services/credential_store';
-
-async function tryAnchor(hash: string): Promise<void> {
-  try {
-    const { PolkadotService } = await import('../blockchain/polkadot_service');
-    const service = new PolkadotService();
-    await service.tryAnchor(hash);
-  } catch (e) {
-    console.warn('Anchor failed (non-blocking):', e);
-  }
-}
+import { tryAnchor } from '../services/polkadot_service';
 
 interface IssueCredentialRequest {
   credentialSubject: any;
