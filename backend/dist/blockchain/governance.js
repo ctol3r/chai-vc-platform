@@ -2,8 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Governance = void 0;
 class Governance {
+    proposals = [];
+    currentParameters;
     constructor(initialParams) {
-        this.proposals = [];
         this.currentParameters = initialParams;
     }
     proposeChange(proposer, params) {
@@ -36,7 +37,10 @@ class Governance {
             throw new Error('Proposal not found');
         }
         if (!proposal.executed && proposal.votesFor > proposal.votesAgainst) {
-            this.currentParameters = Object.assign(Object.assign({}, this.currentParameters), proposal.newParameters);
+            this.currentParameters = {
+                ...this.currentParameters,
+                ...proposal.newParameters
+            };
         }
         proposal.executed = true;
         return this.currentParameters;

@@ -1,0 +1,1 @@
+{ "type-enum": ["feat","fix","chore","docs","refactor","test","perf","build","ci"] }

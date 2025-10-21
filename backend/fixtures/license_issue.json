@@ -1,0 +1,12 @@
+{
+  "credentialSubject": {
+    "id": "did:example:clinician123",
+    "name": "Dr. Jane Smith",
+    "licenseNumber": "MD-12345",
+    "licenseState": "CA",
+    "specialty": "Internal Medicine",
+    "issueDate": "2024-01-15",
+    "expirationDate": "2026-01-15"
+  },
+  "issuer": "did:example:medical-board-ca"
+}

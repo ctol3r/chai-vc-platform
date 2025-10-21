@@ -1,21 +1,24 @@
 .PHONY: ai-setup ai-test backend-setup backend-test test all
 
-# AI matcher (Python)
+# Portable, venv-safe pytest targets
+PY ?= python3
+
 ai-setup:
-	cd ai-matcher-service && python3 -m venv .venv && . .venv/bin/activate && pip install -U pip && \
-	( [ -f requirements.txt ] && pip install -r requirements.txt || pip install pytest numpy pandas scikit-learn )
+	cd ai-matcher-service && $(PY) -m venv .venv && .venv/bin/python -m pip install -U pip && \
+		( [ -f requirements.txt ] && .venv/bin/python -m pip install -r requirements.txt \
+		  || .venv/bin/python -m pip install -U pytest numpy pandas scikit-learn )
 
-ai-test:
-	cd ai-matcher-service && . .venv/bin/activate && pytest -q
+ai-test: ai-setup
+	cd ai-matcher-service && .venv/bin/python -m pytest -q
 
-# Backend (Python)
 backend-setup:
-	cd backend && python3 -m venv .venv && . .venv/bin/activate && pip install -U pip && \
-	( [ -f requirements.txt ] && pip install -r requirements.txt || pip install pytest )
+	cd backend && $(PY) -m venv .venv && .venv/bin/python -m pip install -U pip && \
+		( [ -f requirements.txt ] && .venv/bin/python -m pip install -r requirements.txt \
+		  || .venv/bin/python -m pip install -U pytest )
 
-backend-test:
-	cd backend && . .venv/bin/activate && pytest -q
+backend-test: backend-setup
+	cd backend && .venv/bin/python -m pytest -q
 
 # Run everything
-test: ai-setup backend-setup ai-test backend-test
+test: ai-test backend-test
 all: test

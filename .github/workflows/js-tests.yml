@@ -1,0 +1,64 @@
+name: JS Tests
+
+on:
+  pull_request:
+
+jobs:
+  jest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - name: Detect frontend changes
+        uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            frontend:
+              - frontend/**
+      - name: Install & test
+        if: steps.changes.outputs.frontend == 'true'
+        run: |
+          cd frontend
+          npm ci || npm install
+          npm test -w || npm run test
+      - name: No frontend changes; skipping
+        if: steps.changes.outputs.frontend != 'true'
+        run: echo "No frontend changes in this PR."
+
+  backend-coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Detect backend changes
+        id: backend-changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            backend:
+              - backend/**
+              - scripts/enforce-coverage.mjs
+      - name: Install backend dependencies
+        if: steps.backend-changes.outputs.backend == 'true'
+        run: |
+          cd backend
+          npm install
+      - name: Run backend unit tests with coverage
+        if: steps.backend-changes.outputs.backend == 'true'
+        run: |
+          cd backend
+          npm test -- --coverage --coverageDirectory=../coverage
+      - name: Enforce coverage threshold
+        if: steps.backend-changes.outputs.backend == 'true'
+        run: node scripts/enforce-coverage.mjs 80
+      - name: No backend changes; skipping
+        if: steps.backend-changes.outputs.backend != 'true'
+        run: echo "No backend changes in this PR."
