@@ -8,10 +8,13 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "resolveJsonModule": true
   },
   "include": [
-    "src/**/*"
+    "src/server.ts",
+    "src/services/**/*",
+    "src/routes/**/*"
   ],
   "exclude": ["__tests__", "prisma"]
 }
