@@ -7,9 +7,10 @@
   "type": "commonjs",
   "scripts": {
     "dev": "ts-node src/server.ts",
-    "build": "tsc",
+    "build": "tsc && node -e \"console.log('✅ Build complete')\"",
     "start": "node dist/server.js",
-    "test": "jest",
+    "test": "jest --runInBand",
+    "test:pilot": "./scripts/test-pilot-flow.sh",
     "seed": "ts-node prisma/seed.ts",
     "prisma:generate": "prisma generate"
   },
@@ -22,8 +23,8 @@
     "@prisma/client": "^6.12.0",
     "@types/cheerio": "^0.22.35",
     "@types/jsonwebtoken": "^9.0.10",
-    "apollo-server-express": "^3.12.2",
     "apollo-server": "^3.13.0",
+    "apollo-server-express": "^3.12.2",
     "cheerio": "^1.1.2",
     "did-resolver": "^4.1.0",
     "ethers": "^6.15.0",
@@ -33,6 +34,7 @@
     "graphql": "^16.11.0",
     "jsonwebtoken": "^9.0.2",
     "key-did-resolver": "^4.0.0",
+    "nanoid": "^5.1.6",
     "prisma": "^6.12.0",
     "ts-node": "^10.9.2",
     "web-did-resolver": "^2.0.30"
