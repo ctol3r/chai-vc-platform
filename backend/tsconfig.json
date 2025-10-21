@@ -11,8 +11,7 @@
     "moduleResolution": "node"
   },
   "include": [
-    "src/**/*",
-    "prisma/seed.ts"
+    "src/**/*"
   ],
-  "exclude": ["__tests__"]
+  "exclude": ["__tests__", "src/blockchain/**/*", "src/graphql/**/*", "src/controllers/**/*", "src/credential_registry/**/*", "src/did/**/*", "src/didcomm/**/*", "src/licensing/**/*", "src/middleware/**/*", "src/nppes_cache.py", "src/payments/**/*", "src/privileges/**/*", "src/provisional_attestation.ts", "src/queues/**/*", "src/utils/**/*", "src/app.ts", "src/index.ts"]
 }

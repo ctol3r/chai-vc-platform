@@ -1,6 +1,6 @@
 import request from 'supertest';
 import express from 'express';
-import { router as verifierRouter } from '../src/routes/verifier_routes';
+import verifierRouter from '../src/routes/verifier_routes';
 
 const app = express();
 app.use('/api', verifierRouter);
