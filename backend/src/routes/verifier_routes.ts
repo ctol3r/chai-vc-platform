@@ -1,14 +1,109 @@
-import { Router } from 'express';
-import { getCredentialStatus } from '../controllers/verifier_controller';
+/**
+ * Verifier routes for Pilot P0
+ * POST /verifier/presentation - Verify presentation
+ */
 
-export const router = Router();
+import { Router, Request, Response } from 'express';
+import { credentialStore } from '../services/store';
+import { auditScrapbook } from '../services/audit';
+import { decodeJwt, verifySig } from '../services/jwt';
 
-router.get('/verifier/credential/:credentialId/status', async (req, res) => {
+export const verifierRoutes = Router();
+
+interface VerifyPresentationRequest {
+  jwt: string;
+}
+
+/**
+ * POST /verifier/presentation
+ * Verify a verifiable presentation (JWT)
+ */
+verifierRoutes.post('/presentation', async (req: Request, res: Response) => {
   try {
-    const status = await getCredentialStatus(req.params.credentialId);
-    res.json({ credentialId: req.params.credentialId, status });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Unable to fetch credential status' });
+    const { jwt }: VerifyPresentationRequest = req.body;
+
+    // Check if JWT is provided
+    if (!jwt) {
+      return res.status(400).json({
+        valid: false,
+        reason: 'missing_jwt'
+      });
+    }
+
+    // Verify signature
+    if (!verifySig(jwt)) {
+      const auditRef = await auditScrapbook.record('verify', {
+        result: 'invalid_signature'
+      });
+      
+      return res.status(200).json({
+        valid: false,
+        reason: 'bad_signature',
+        auditRef
+      });
+    }
+
+    // Decode JWT payload
+    let payload;
+    try {
+      payload = decodeJwt(jwt);
+    } catch (error) {
+      const auditRef = await auditScrapbook.record('verify', {
+        result: 'decode_failed'
+      });
+      
+      return res.status(200).json({
+        valid: false,
+        reason: 'bad_signature',
+        auditRef
+      });
+    }
+
+    // Extract credential ID
+    const credentialId = payload.credentialId || payload.jti;
+    if (!credentialId) {
+      const auditRef = await auditScrapbook.record('verify', {
+        result: 'missing_credential_id'
+      });
+      
+      return res.status(200).json({
+        valid: false,
+        reason: 'bad_signature',
+        auditRef
+      });
+    }
+
+    // Check credential status
+    const status = await credentialStore.getStatus(credentialId);
+    const valid = status === 'ACTIVE';
+    const reason = valid ? undefined : status.toLowerCase();
+
+    // Audit the verification
+    const auditRef = await auditScrapbook.record('verify', {
+      credentialId,
+      status,
+      result: valid ? 'valid' : 'invalid'
+    });
+
+    res.status(200).json({
+      valid,
+      reason,
+      auditRef,
+      credentialId
+    });
+
+  } catch (error) {
+    console.error('[VERIFIER] Presentation verification failed:', error);
+    
+    // Still audit the failed attempt
+    const auditRef = await auditScrapbook.record('verify', {
+      result: 'system_error'
+    });
+    
+    res.status(500).json({
+      valid: false,
+      reason: 'system_error',
+      auditRef
+    });
   }
 });
