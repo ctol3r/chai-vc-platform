@@ -11,8 +11,7 @@
     "moduleResolution": "node"
   },
   "include": [
-    "src/**/*",
-    "prisma/seed.ts"
+    "src/**/*"
   ],
-  "exclude": ["__tests__"]
+  "exclude": ["__tests__", "prisma"]
 }
