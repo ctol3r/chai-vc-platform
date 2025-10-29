@@ -1,0 +1,12 @@
+{
+  "name": "@vitalcv/vc-schemas",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3"
+  }
+}
