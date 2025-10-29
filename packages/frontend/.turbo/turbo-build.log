@@ -1,0 +1,28 @@
+
+> @vitalcv/frontend@0.1.0 build /workspace/packages/frontend
+> next build
+
+  ▲ Next.js 14.2.7
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/3) ...
+ ✓ Generating static pages (3/3)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                               Size     First Load JS
+─ ○ /api/health                           0 B                0 B
++ First Load JS shared by all             0 B
+
+Route (pages)                             Size     First Load JS
+─ ○ /404                                  180 B          79.1 kB
++ First Load JS shared by all             78.9 kB
+  ├ chunks/framework-bef83a85c94ff7de.js  45.2 kB
+  ├ chunks/main-4f49586bebf17183.js       32.1 kB
+  └ other shared chunks (total)           1.63 kB
+
+○  (Static)  prerendered as static content
+

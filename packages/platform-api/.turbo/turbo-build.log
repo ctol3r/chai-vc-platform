@@ -1,0 +1,4 @@
+
+> @vitalcv/platform-api@0.1.0 build /workspace/packages/platform-api
+> tsc -p tsconfig.json
+

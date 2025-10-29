@@ -1,16 +1,12 @@
-name: ci
+name: e2e-nightly
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  schedule:
+    - cron: "30 9 * * *" # 1:30am PT
+  workflow_dispatch:
 
 jobs:
-  build:
+  e2e:
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -20,6 +16,5 @@ jobs:
           node-version: 20.11.1
           cache: pnpm
       - run: pnpm install --frozen-lockfile=false
-      - run: pnpm lint
       - run: pnpm build
-      - run: pnpm test
+      - run: pnpm e2e
