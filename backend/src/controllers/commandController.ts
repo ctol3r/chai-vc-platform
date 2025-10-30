@@ -5,6 +5,10 @@ import { COMMANDS } from "packages/command-registry";
 import { isValidNPI } from "./npiUtil";
 import { auditLog } from "./audit";
 import { lookupNPI } from "../services/nppesService";
+import {
+  commandExecCounter,
+  commandLatency,
+} from "../instrumentation/metrics";
 
 const router = express.Router();
 
@@ -78,7 +82,7 @@ async function handleExecuteCommand(
     const { npi } = params;
     if (!isValidNPI(npi)) throw new Error("invalid_npi_format");
 
-    // Use nppesService which handles caching, DB persistence, and audit logging
+    // Use nppesService which handles caching, DB persistence, audit logging, and metrics
     const provider = await lookupNPI(npi);
 
     // Additional audit log for the command execution
@@ -126,24 +130,48 @@ router.post("/parse", async (req, res) => {
 });
 
 router.post("/execute", async (req, res) => {
+  const start = Date.now();
+  const user =
+    (req as any).user || { id: "system-test", roles: ["clinician"] }; // integrate your auth middleware
+  const { id, rawQuery, params } = req.body;
+
+  let cmdId = id;
+  let paramObj = params;
+
+  if (!cmdId && rawQuery) {
+    const parsed = parseNLtoCommand(rawQuery);
+    if (!parsed) return res.status(400).json({ error: "cannot_parse" });
+    cmdId = parsed.id;
+    paramObj = parsed.params;
+  }
+
   try {
-    const user =
-      (req as any).user || { id: "system-test", roles: ["clinician"] }; // integrate your auth middleware
-    const { id, rawQuery, params } = req.body;
-
-    let cmdId = id;
-    let paramObj = params;
-
-    if (!cmdId && rawQuery) {
-      const parsed = parseNLtoCommand(rawQuery);
-      if (!parsed) return res.status(400).json({ error: "cannot_parse" });
-      cmdId = parsed.id;
-      paramObj = parsed.params;
-    }
-
     const result = await handleExecuteCommand(user, cmdId, paramObj || {});
+    const duration = (Date.now() - start) / 1000;
+    const userRole = user.roles[0] || "unknown";
+    commandExecCounter.inc({
+      command: cmdId || "unknown",
+      status: "ok",
+      user_role: userRole,
+    });
+    commandLatency.observe(
+      { command: cmdId || "unknown", user_role: userRole },
+      duration
+    );
     return res.json({ ok: true, result });
   } catch (err: any) {
+    const duration = (Date.now() - start) / 1000;
+    const userRole = user.roles[0] || "unknown";
+    commandExecCounter.inc({
+      command: cmdId || "unknown",
+      status: "error",
+      user_role: userRole,
+    });
+    commandLatency.observe(
+      { command: cmdId || "unknown", user_role: userRole },
+      duration
+    );
+    npiLookupCounter.inc({ result: "error" });
     return res.status(400).json({ ok: false, error: String(err.message) });
   }
 });

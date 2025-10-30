@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import { body } from 'express-validator';
 import { validateRequest } from './middleware/validateRequest';
 import { errorHandler } from './middleware/errorHandler';
+import { metricsHandler } from './instrumentation/metrics';
 
 const app = express();
 
@@ -19,6 +20,9 @@ app.post(
 );
 
 app.use('/api/command', require('./controllers/commandController').default);
+app.use('/api/ai', require('./controllers/aiController').default);
+
+app.get('/metrics', metricsHandler);
 
 app.use(errorHandler);
 

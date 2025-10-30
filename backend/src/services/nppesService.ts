@@ -3,6 +3,7 @@ import Redis from "ioredis";
 import prisma from "../graphql/prisma_client";
 import { isValidNPI } from "../controllers/npiUtil";
 import { auditLog } from "../controllers/audit";
+import { npiLookupCounter } from "../instrumentation/metrics";
 
 const redis = new Redis(process.env.REDIS_URL || "redis://localhost:6379");
 
@@ -13,7 +14,11 @@ export async function lookupNPI(npi: string, opts: { bypassCache?: boolean } = {
   const cacheKey = `nppes:npi:${npi}`;
   if (!opts.bypassCache) {
     const cached = await redis.get(cacheKey);
-    if (cached) return JSON.parse(cached);
+    if (cached) {
+      npiLookupCounter.inc({ result: "cache_hit" });
+      return JSON.parse(cached);
+    }
+    npiLookupCounter.inc({ result: "cache_miss" });
   }
 
   // Use an internal proxy if set (avoids CORS & centralizes rate limiting)
@@ -60,6 +65,9 @@ export async function lookupNPI(npi: string, opts: { bypassCache?: boolean } = {
 
   // cache TTL 24h
   await redis.set(cacheKey, JSON.stringify(provider), "EX", 60 * 60 * 24);
+
+  // Track success if we got here (after cache miss)
+  npiLookupCounter.inc({ result: "success" });
 
   // audit that a lookup happened (no PHI besides npi, which is allowed for credentialing)
   await auditLog("system", "npi.lookup", { npi, source: proxyUrl ? "proxy" : "direct" });
