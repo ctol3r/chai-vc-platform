@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import { body } from 'express-validator';
 import { validateRequest } from './middleware/validateRequest';
 import { errorHandler } from './middleware/errorHandler';
+import commandController from './controllers/commandController';
 
 const app = express();
 
@@ -17,6 +18,8 @@ app.post(
     res.json({ message: 'Credential created' });
   }
 );
+
+app.use('/command', commandController);
 
 app.use(errorHandler);
 
