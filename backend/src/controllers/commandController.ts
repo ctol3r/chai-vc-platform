@@ -4,6 +4,7 @@ import { z } from "zod";
 import { COMMANDS } from "packages/command-registry";
 import { isValidNPI } from "./npiUtil";
 import { auditLog } from "./audit";
+import { lookupNPI } from "../services/nppesService";
 
 const router = express.Router();
 
@@ -77,20 +78,10 @@ async function handleExecuteCommand(
     const { npi } = params;
     if (!isValidNPI(npi)) throw new Error("invalid_npi_format");
 
-    // check local cache / db first
-    // (replace with actual DB/redis calls)
-    // pseudo: const cached = await Provider.findByNpi(npi)
-    // if (cached && fresh) return cached
-    // else call NPPES internal worker
-    const nppesUrl =
-      process.env.NPPES_PROXY_URL ||
-      `${process.env.BACKEND_BASE_URL}/internal/nppes/lookup`;
-    const provider = await proxyPostJson(nppesUrl, { npi });
+    // Use nppesService which handles caching, DB persistence, and audit logging
+    const provider = await lookupNPI(npi);
 
-    // persist to DB (pseudo)
-    // await Provider.upsert({npi, data:provider, last_verified: new Date()})
-
-    // emit audit
+    // Additional audit log for the command execution
     await auditLog(user.id, "npi.validate", { npi, result: !!provider });
     return { provider };
   }
