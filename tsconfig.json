@@ -5,7 +5,12 @@
     "rootDir": "./backend/src",
     "outDir": "./backend/dist",
     "esModuleInterop": true,
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "baseUrl": "./backend/src",
+    "paths": {
+      "packages/*": ["packages/*"],
+      "controllers/*": ["controllers/*"]
+    }
   },
   "include": ["backend/**/*.ts"]
 }
