@@ -59,6 +59,25 @@ This is the initial pilot release of the Chai VC Platform, focused on credential
   - Real-time status polling
   - Error handling
 
+#### SLO Dashboard Component
+- **Route**: `/dashboard/slo`
+- **Description**: Service Level Objective monitoring dashboard
+- **Features**:
+  - 5 SLO metric cards (PSV Accuracy, TTP P90, FPPE Rate, Adverse Misses, Evidence Completeness)
+  - Alert banner for threshold breaches
+  - Historical trend charts (Recharts)
+  - Auto-refresh every 30 seconds
+  - Role-based access control (admin/ops)
+  - Mobile responsive design
+  - Color-coded status indicators
+
+#### Admin Navigation
+- **Description**: Navigation bar for admin/ops users
+- **Features**:
+  - Links to SLO Dashboard and Claim Wizard
+  - User role badge
+  - Responsive design
+
 ### Infrastructure
 
 #### Metrics & Monitoring
@@ -68,6 +87,28 @@ This is the initial pilot release of the Chai VC Platform, focused on credential
   - Command execution counter
   - Command latency histogram
   - NPI lookup counter (cache hits/misses, successes, errors)
+  - SLO metrics (PSV accuracy, evidence completeness, FPPE rate, adverse misses, TTP histogram)
+
+#### SLO Metrics Endpoint
+- **Endpoint**: `GET /api/metrics/slo`
+- **Description**: JSON endpoint for SLO dashboard
+- **Returns**:
+  - PSV Accuracy ratio
+  - Time to Privilege (P90 in days)
+  - FPPE trigger rate
+  - Adverse miss count
+  - Evidence completeness ratio
+
+#### Health Check Endpoint
+- **Endpoint**: `GET /api/health`
+- **Description**: Comprehensive health check with subchecks
+- **Monitors**:
+  - Redis connectivity and latency
+  - Database connectivity and latency
+  - Prometheus metrics availability
+  - Memory usage
+  - Application uptime
+- **Use Cases**: Kubernetes probes, load balancer checks, monitoring dashboards
 
 #### Audit Logging
 - Event tracking for all critical operations
@@ -88,6 +129,8 @@ This is the initial pilot release of the Chai VC Platform, focused on credential
 - **Framework**: Next.js 14 (React/TypeScript)
 - **Router**: App Router
 - **State Management**: React Hooks
+- **Charts**: Recharts 2.12
+- **Components**: Card, Sparkline, SLODashboard, AdminNav
 
 ### DevOps
 - **Containerization**: Docker Compose
@@ -207,14 +250,30 @@ See `docs/privacy-notes.md` for HIPAA & privacy considerations.
 ## Changelog
 
 ### v0.1.0 (Initial Pilot)
+
+#### Backend
 - ✅ Backend route separation (npi, claimDoc, claimBasic, claimStatus)
-- ✅ Frontend ClaimWizard component
-- ✅ App Router page at `/start`
-- ✅ Metrics endpoint
+- ✅ Metrics endpoint (`/metrics`)
+- ✅ SLO metrics endpoint (`/api/metrics/slo`)
+- ✅ Health check endpoint (`/api/health`)
 - ✅ Audit logging infrastructure
 - ✅ NPI lookup with Redis caching
 - ✅ File upload with Multer
 - ✅ Status tracking workflow
+- ✅ SLO metrics instrumentation (PSV, TTP, Evidence, FPPE, Adverse)
+- ✅ Claim flow instrumentation with metrics
+
+#### Frontend
+- ✅ ClaimWizard component
+- ✅ SLODashboard component with charts
+- ✅ AdminNav component
+- ✅ Card component
+- ✅ Sparkline component (micro-trends)
+- ✅ App Router page at `/start`
+- ✅ App Router page at `/dashboard/slo`
+- ✅ Role-based access control
+- ✅ Auto-refresh polling
+- ✅ Alert threshold detection
 
 ## Contributors
 

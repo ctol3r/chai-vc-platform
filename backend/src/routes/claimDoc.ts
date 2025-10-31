@@ -3,6 +3,7 @@ import multer from "multer";
 import { v4 as uuidv4 } from "uuid";
 import { auditLog } from "../controllers/audit";
 import { isValidNPI } from "../controllers/npiUtil";
+import { evidenceCompleteRatio } from "../instrumentation/metrics";
 
 const router = express.Router();
 
@@ -61,6 +62,10 @@ router.post("/doc", upload.any(), async (req, res) => {
       npi,
       fileCount: files.length,
     });
+
+    // Track evidence completeness (simple heuristic: at least 2 files)
+    const hasMinimumEvidence = files.length >= 2;
+    evidenceCompleteRatio.set(hasMinimumEvidence ? 1.0 : 0.5);
 
     return res.json({ claimId: id, statusId });
   } catch (err: any) {

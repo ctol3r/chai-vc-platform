@@ -26,6 +26,7 @@ app.use('/api/claim', require('./routes/claimDoc').default);
 app.use('/api/claim', require('./routes/claimBasic').default);
 app.use('/api/claim', require('./routes/claimStatus').default);
 app.use('/api/metrics', require('./routes/metrics').default);
+app.use('/api/health', require('./routes/health').default);
 
 app.get('/metrics', metricsHandler);
 

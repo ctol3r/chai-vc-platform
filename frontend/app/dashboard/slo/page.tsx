@@ -9,6 +9,10 @@ const SLODashboard = dynamic(() => import('../../../components/SLODashboard'), {
   ssr: false,
 });
 
+const AdminNav = dynamic(() => import('../../../components/AdminNav'), {
+  ssr: false,
+});
+
 // Simple auth check (replace with real auth in production)
 const checkAuth = (): { isAuthorized: boolean; role?: string } => {
   // In production, this would check session/auth tokens
@@ -29,10 +33,12 @@ function SLOPageContent() {
   const [authorized, setAuthorized] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
   const [mockData, setMockData] = useState(false);
+  const [userRole, setUserRole] = useState<string>('');
 
   useEffect(() => {
     const auth = checkAuth();
     setAuthorized(auth.isAuthorized);
+    setUserRole(auth.role || 'guest');
     
     // Check for mockSLO query parameter
     const params = new URLSearchParams(window.location.search);
@@ -72,6 +78,7 @@ function SLOPageContent() {
 
   return (
     <div>
+      <AdminNav userRole={userRole} />
       <SLODashboard mockData={mockData} />
     </div>
   );
