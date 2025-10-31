@@ -21,7 +21,10 @@ app.post(
 
 app.use('/api/command', require('./controllers/commandController').default);
 app.use('/api/ai', require('./controllers/aiController').default);
-app.use('/api', require('./routes/claim').default);
+app.use('/api/npi', require('./routes/npi').default);
+app.use('/api/claim', require('./routes/claimDoc').default);
+app.use('/api/claim', require('./routes/claimBasic').default);
+app.use('/api/claim', require('./routes/claimStatus').default);
 
 app.get('/metrics', metricsHandler);
 
