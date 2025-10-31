@@ -284,6 +284,19 @@ See `docs/privacy-notes.md` for HIPAA & privacy considerations.
 - ✅ Audit logging for all VC operations
 - ✅ Comprehensive unit tests
 
+#### Credential Issuance (ACA-Py)
+- ✅ ACA-Py client library with TLS and auth
+- ✅ `/api/issuer/attest-request` - Request credential issuance
+- ✅ `/api/issuer/attest-status/:id` - Check issuance status
+- ✅ `/api/issuer/webhook/credential` - Receive ACA-Py events
+- ✅ `/api/issuer/status` - Get agent status
+- ✅ `/api/issuer/credential-definitions` - List credential definitions
+- ✅ `/api/issuer/connection/create` - Create connection invitations
+- ✅ Bull queue for async credential issuance
+- ✅ Retry logic with exponential backoff
+- ✅ Stub implementation for local development
+- ✅ Comprehensive unit tests
+
 ## Contributors
 
 [Add contributors]
