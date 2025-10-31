@@ -275,6 +275,15 @@ See `docs/privacy-notes.md` for HIPAA & privacy considerations.
 - ✅ Auto-refresh polling
 - ✅ Alert threshold detection
 
+#### Selective Disclosure (SD-JWT)
+- ✅ SD-JWT library implementation
+- ✅ `/api/vc/sd-issue` - Issue SD-JWTs with selective disclosure
+- ✅ `/api/vc/sd-verify` - Verify SD-JWTs and extract claims
+- ✅ `/api/vc/sd-select` - Create selective disclosures
+- ✅ Salt storage and management
+- ✅ Audit logging for all VC operations
+- ✅ Comprehensive unit tests
+
 ## Contributors
 
 [Add contributors]

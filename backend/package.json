@@ -42,7 +42,12 @@
     "ts-node": "^10.9.2",
     "web-did-resolver": "^2.0.30",
     "zod": "^3.23.8",
-    "uuid": "^9.0.1"
+    "uuid": "^9.0.1",
+    "@sd-jwt/core": "^0.7.0",
+    "@sd-jwt/hash": "^0.7.0",
+    "@sd-jwt/decode": "^0.7.0",
+    "@sd-jwt/present": "^0.7.0",
+    "@sd-jwt/jwt-status-list": "^0.7.0"
   },
   "devDependencies": {
     "@types/bull": "^4.10.0",
