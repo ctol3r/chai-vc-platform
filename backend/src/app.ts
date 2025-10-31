@@ -25,6 +25,7 @@ app.use('/api/npi', require('./routes/npi').default);
 app.use('/api/claim', require('./routes/claimDoc').default);
 app.use('/api/claim', require('./routes/claimBasic').default);
 app.use('/api/claim', require('./routes/claimStatus').default);
+app.use('/api/metrics', require('./routes/metrics').default);
 
 app.get('/metrics', metricsHandler);
 
