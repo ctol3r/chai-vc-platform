@@ -1,11 +1,19 @@
 import express, { Request, Response } from 'express';
+import morgan from 'morgan';
 import { body } from 'express-validator';
 import { validateRequest } from './middleware/validateRequest';
 import { errorHandler } from './middleware/errorHandler';
+import claimRoutes from './routes/claim';
+import healthRoutes from './routes/health';
+import { router as verifierRoutes } from './routes/verifier_routes';
 
 const app = express();
 
+// Request logging middleware
+app.use(morgan('combined'));
+
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.post(
   '/credentials',
@@ -17,6 +25,11 @@ app.post(
     res.json({ message: 'Credential created' });
   }
 );
+
+// API routes
+app.use('/api', claimRoutes);
+app.use('/api', healthRoutes);
+app.use('/api', verifierRoutes);
 
 app.use(errorHandler);
 
