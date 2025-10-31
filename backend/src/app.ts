@@ -5,6 +5,7 @@ import { validateRequest } from './middleware/validateRequest';
 import { errorHandler } from './middleware/errorHandler';
 import claimRoutes from './routes/claim';
 import healthRoutes from './routes/health';
+import metricsRoutes from './routes/metrics';
 import { router as verifierRoutes } from './routes/verifier_routes';
 
 const app = express();
@@ -29,6 +30,7 @@ app.post(
 // API routes
 app.use('/api', claimRoutes);
 app.use('/api', healthRoutes);
+app.use('/api', metricsRoutes);
 app.use('/api', verifierRoutes);
 
 app.use(errorHandler);

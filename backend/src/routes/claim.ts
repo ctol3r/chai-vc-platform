@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import multer from 'multer';
 import { isValidNPI } from '../controllers/npiUtil';
 import { createClaimJob, getJobStatus, startClaimProcessing, ClaimStatus } from '../lib/jobs';
+import { recordClaimSubmission } from './metrics';
 
 const router = Router();
 
@@ -122,9 +123,15 @@ router.post('/claim/doc', upload.single('document'), async (req: Request, res: R
     
     claimDocStore.set(claimId, claimDoc);
     
+    // Record metrics
+    const startTime = Date.now();
+    
     // Create and start job processing
     createClaimJob(claimId);
     startClaimProcessing(claimId);
+    
+    // Record submission latency
+    recordClaimSubmission(Date.now() - startTime);
     
     res.status(201).json({
       claimId,
@@ -169,9 +176,15 @@ router.post('/claim/basic', async (req: Request, res: Response) => {
     
     basicClaimStore.set(claimId, basicClaim);
     
+    // Record metrics
+    const startTime = Date.now();
+    
     // Create and start job processing
     createClaimJob(claimId);
     startClaimProcessing(claimId);
+    
+    // Record submission latency
+    recordClaimSubmission(Date.now() - startTime);
     
     res.status(201).json({
       claimId,
@@ -274,6 +287,67 @@ router.post('/issuer/attest-request', async (req: Request, res: Response) => {
   } catch (err) {
     console.error('Error creating attestation request:', err);
     res.status(500).json({ error: 'Internal server error during attestation request' });
+  }
+});
+
+/**
+ * POST /api/did/link
+ * Link a DID to a claim and store DID metadata
+ * (Stub implementation for pilot)
+ */
+interface DIDMetadata {
+  did: string;
+  method?: string; // e.g., 'web', 'ethr', 'key'
+  document?: Record<string, any>;
+  linkedAt: Date;
+}
+
+const didLinkStore = new Map<string, DIDMetadata>();
+
+router.post('/did/link', async (req: Request, res: Response) => {
+  try {
+    const { claimId, did, metadata } = req.body;
+    
+    if (!claimId || typeof claimId !== 'string') {
+      return res.status(400).json({ error: 'claimId is required and must be a string' });
+    }
+    
+    if (!did || typeof did !== 'string') {
+      return res.status(400).json({ error: 'did is required and must be a string' });
+    }
+    
+    // Verify claim exists
+    const job = getJobStatus(claimId);
+    if (!job) {
+      return res.status(404).json({ error: 'Claim not found', claimId });
+    }
+    
+    // Store DID metadata
+    const didMetadata: DIDMetadata = {
+      did,
+      method: metadata?.method || did.split(':')[1],
+      document: metadata?.document || {},
+      linkedAt: new Date(),
+    };
+    
+    didLinkStore.set(claimId, didMetadata);
+    
+    // In production, this would also:
+    // 1. Resolve the DID document
+    // 2. Validate the DID format and method
+    // 3. Store DID metadata in the claim record (database)
+    // 4. Emit an event for DID linking
+    
+    res.status(201).json({
+      claimId,
+      did,
+      method: didMetadata.method,
+      linkedAt: didMetadata.linkedAt,
+      message: 'DID linked successfully (stub)',
+    });
+  } catch (err) {
+    console.error('Error linking DID:', err);
+    res.status(500).json({ error: 'Internal server error during DID linking' });
   }
 });
 
