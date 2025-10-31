@@ -3,6 +3,8 @@ import multer from 'multer';
 import { isValidNPI } from '../controllers/npiUtil';
 import { createClaimJob, getJobStatus, startClaimProcessing, ClaimStatus } from '../lib/jobs';
 import { recordClaimSubmission } from './metrics';
+import { parseImageBufferPilot } from '../lib/ocr';
+import { logAuditEvent } from '../lib/auditScrapbook';
 
 const router = Router();
 
@@ -348,6 +350,135 @@ router.post('/did/link', async (req: Request, res: Response) => {
   } catch (err) {
     console.error('Error linking DID:', err);
     res.status(500).json({ error: 'Internal server error during DID linking' });
+  }
+});
+
+/**
+ * POST /api/ocr/parse
+ * Parse OCR from an uploaded image/document
+ */
+router.post('/ocr/parse', upload.single('file'), async (req: Request, res: Response) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const ocrResult = await parseImageBufferPilot(req.file.buffer, req.file.originalname);
+
+    res.json({
+      success: true,
+      ocr: ocrResult,
+      filename: req.file.originalname,
+    });
+  } catch (err) {
+    console.error('Error parsing OCR:', err);
+    res.status(500).json({ error: 'Internal server error during OCR parsing' });
+  }
+});
+
+/**
+ * POST /api/issuer/webhook
+ * Auto-attest webhook that accepts a claimId and auto-issues a simulated VC
+ * Logs events to AuditScrapbook
+ */
+router.post('/issuer/webhook', async (req: Request, res: Response) => {
+  try {
+    const { claimId, issuerId } = req.body;
+    
+    if (!claimId || typeof claimId !== 'string') {
+      return res.status(400).json({ error: 'claimId is required and must be a string' });
+    }
+    
+    // Verify claim exists
+    const job = getJobStatus(claimId);
+    if (!job) {
+      return res.status(404).json({ error: 'Claim not found', claimId });
+    }
+
+    // Check if claim is ready for attestation
+    if (job.status !== ClaimStatus.ATTESTATION_PENDING && job.status !== ClaimStatus.OCR_COMPLETE) {
+      return res.status(400).json({ 
+        error: 'Claim not ready for attestation',
+        currentStatus: job.status,
+        requiredStatus: [ClaimStatus.ATTESTATION_PENDING, ClaimStatus.OCR_COMPLETE],
+      });
+    }
+
+    const effectiveIssuerId = issuerId || 'pilot-issuer-001';
+
+    // Log webhook received
+    logAuditEvent(
+      'issuer.webhook',
+      'webhook.received',
+      { claimId, issuerId: effectiveIssuerId },
+      claimId,
+      effectiveIssuerId
+    );
+
+    // Call internal attest-request to trigger VC issuance
+    // In production, this would call ACA-Py or another issuer service
+    try {
+      // Simulate VC issuance
+      const vc = {
+        id: `vc-${claimId}-${Date.now()}`,
+        type: 'MedicalLicenseVC',
+        issuedBy: effectiveIssuerId,
+        issuedAt: new Date().toISOString(),
+        claimId,
+        credentialSubject: {
+          id: `did:pilot:${claimId}`,
+          licenseNumber: 'LIC-123456',
+          name: 'Dr. Pilot Example',
+          issuingAuthority: 'State Medical Board',
+          expirationDate: '2025-12-31',
+        },
+      };
+
+      // Update job status to completed
+      job.status = ClaimStatus.COMPLETED;
+      job.attestationCompletedAt = new Date();
+
+      // Log VC issuance
+      logAuditEvent(
+        'issuer.vc',
+        'vc.issued',
+        { 
+          claimId, 
+          issuerId: effectiveIssuerId,
+          vcId: vc.id,
+          vcType: vc.type,
+        },
+        claimId,
+        effectiveIssuerId
+      );
+
+      res.status(200).json({
+        success: true,
+        claimId,
+        issuerId: effectiveIssuerId,
+        vc,
+        issuedAt: vc.issuedAt,
+        message: 'VC issued successfully (pilot simulation)',
+      });
+    } catch (attestErr) {
+      // Log error
+      logAuditEvent(
+        'issuer.webhook',
+        'webhook.error',
+        { 
+          claimId, 
+          issuerId: effectiveIssuerId,
+          error: attestErr instanceof Error ? attestErr.message : 'Unknown error',
+        },
+        claimId,
+        effectiveIssuerId
+      );
+
+      throw attestErr;
+    }
+  } catch (err) {
+    console.error('Error in issuer webhook:', err);
+    res.status(500).json({ error: 'Internal server error during VC issuance' });
   }
 });
 
