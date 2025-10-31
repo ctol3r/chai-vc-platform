@@ -21,6 +21,7 @@ app.post(
 
 app.use('/api/command', require('./controllers/commandController').default);
 app.use('/api/ai', require('./controllers/aiController').default);
+app.use('/api', require('./routes/claim').default);
 
 app.get('/metrics', metricsHandler);
 
