@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express";
 import fetch from "node-fetch";
 
-import { COMMANDS } from "packages/command-registry";
+import { COMMANDS } from "../packages/command-registry";
 import { isValidNPI } from "./npiUtil";
 import { auditLog } from "./audit";
 

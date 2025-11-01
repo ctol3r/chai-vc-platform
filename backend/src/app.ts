@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express';
 import { body } from 'express-validator';
-import commandController from 'controllers/commandController';
+import commandController from './controllers/commandController';
 import { validateRequest } from './middleware/validateRequest';
 import { errorHandler } from './middleware/errorHandler';
 
