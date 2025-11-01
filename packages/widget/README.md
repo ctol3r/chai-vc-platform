@@ -1,6 +1,6 @@
 # @vitalcv/widget
 
-Embeddable widget for VitalCV credential verification and claim submission.
+Embeddable widget for VitalCV credential verification. Enables partners to integrate VitalCV's credential claim flow into their applications.
 
 ## Installation
 
@@ -8,159 +8,200 @@ Embeddable widget for VitalCV credential verification and claim submission.
 npm install @vitalcv/widget
 ```
 
-Or via CDN:
-
-```html
-<script src="https://cdn.vitalcv.com/widget/v0.1.0/vitalcv-widget.min.js"></script>
-```
-
 ## Usage
 
-### Basic Example
+### Basic Example (Plain JavaScript)
 
-```javascript
-import { initWidget } from '@vitalcv/widget';
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Apply with VitalCV</title>
+</head>
+<body>
+  <div id="vitalcv-widget"></div>
 
-const widget = initWidget({
-  apiUrl: 'https://api.vitalcv.com',
-  allowedOrigins: ['https://vitalcv.com'],
-  onComplete: (result) => {
-    console.log('Claim submitted:', result.claimId);
-    // Handle completion (e.g., redirect, show success message)
-  },
-  onError: (error) => {
-    console.error('Widget error:', error);
-  },
-});
+  <script src="https://unpkg.com/@vitalcv/widget@latest"></script>
+  <script>
+    const widget = VitalCVWidget.createWidget({
+      containerId: 'vitalcv-widget',
+      apiKey: 'your-partner-api-key',
+      apiUrl: 'https://api.vitalcv.com',
+      onComplete: (data) => {
+        console.log('Claim completed:', data);
+        // Send to your backend for verification
+        fetch('/api/verify-claim', {
+          method: 'POST',
+          body: JSON.stringify(data),
+        });
+      },
+      onError: (error) => {
+        console.error('Widget error:', error);
+      }
+    });
 
-// Open widget
-document.getElementById('apply-btn').addEventListener('click', () => {
-  widget.open();
-});
+    widget.open();
+  </script>
+</body>
+</html>
 ```
 
 ### React Example
 
 ```tsx
-import React from 'react';
-import { VitalCVWidget, WidgetConfig } from '@vitalcv/widget';
+import { useEffect, useRef } from 'react';
+import { createWidget, WidgetAPI } from '@vitalcv/widget';
 
-const ApplyButton: React.FC = () => {
-  const handleApply = async () => {
-    const widget = new VitalCVWidget({
-      apiUrl: 'https://api.vitalcv.com',
-      mode: 'modal',
-      onComplete: (result) => {
-        alert(`Application submitted: ${result.claimId}`);
+export function ApplyButton() {
+  const widgetRef = useRef<WidgetAPI | null>(null);
+
+  useEffect(() => {
+    widgetRef.current = createWidget({
+      containerId: 'vitalcv-container',
+      apiKey: process.env.VITALCV_API_KEY!,
+      onComplete: (data) => {
+        console.log('Application complete:', data);
+        // Handle completion
       },
     });
 
-    await widget.open();
-  };
+    return () => {
+      widgetRef.current?.destroy();
+    };
+  }, []);
 
   return (
-    <button onClick={handleApply}>
-      Apply with VitalCV
-    </button>
+    <div>
+      <button onClick={() => widgetRef.current?.open()}>
+        Apply with VitalCV
+      </button>
+      <div id="vitalcv-container" />
+    </div>
   );
-};
-
-export default ApplyButton;
+}
 ```
 
 ### Vue Example
 
 ```vue
 <template>
-  <button @click="openWidget">Apply with VitalCV</button>
+  <div>
+    <button @click="openWidget">Apply with VitalCV</button>
+    <div id="vitalcv-widget"></div>
+  </div>
 </template>
 
 <script>
-import { initWidget } from '@vitalcv/widget';
+import { createWidget } from '@vitalcv/widget';
 
 export default {
+  data() {
+    return {
+      widget: null,
+    };
+  },
+  mounted() {
+    this.widget = createWidget({
+      containerId: 'vitalcv-widget',
+      apiKey: process.env.VUE_APP_VITALCV_API_KEY,
+      onComplete: (data) => {
+        console.log('Claim completed:', data);
+      },
+    });
+  },
   methods: {
-    async openWidget() {
-      const widget = initWidget({
-        apiUrl: 'https://api.vitalcv.com',
-        onComplete: (result) => {
-          console.log('Application completed:', result);
-        },
-      });
-
-      await widget.open();
+    openWidget() {
+      this.widget?.open();
     },
+  },
+  beforeUnmount() {
+    this.widget?.destroy();
   },
 };
 </script>
 ```
 
-### Plain JavaScript
+## API Reference
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-  <title>VitalCV Widget Demo</title>
-</head>
-<body>
-  <button id="apply-btn">Apply with VitalCV</button>
+### `createWidget(config)`
 
-  <script src="https://cdn.vitalcv.com/widget/v0.1.0/vitalcv-widget.min.js"></script>
-  <script>
-    const widget = VitalCV.initWidget({
-      apiUrl: 'https://api.vitalcv.com',
-      allowedOrigins: ['https://vitalcv.com'],
-      onComplete: function(result) {
-        alert('Application submitted: ' + result.claimId);
-      },
-      onError: function(error) {
-        console.error('Error:', error);
-      }
-    });
+Creates a new widget instance.
 
-    document.getElementById('apply-btn').addEventListener('click', function() {
-      widget.open();
-    });
-  </script>
-</body>
-</html>
+**Parameters:**
+
+- `containerId` (string, required): DOM element ID where widget will be mounted
+- `apiKey` (string, required): Partner API key from VitalCV
+- `apiUrl` (string, optional): Backend API URL (default: `https://api.vitalcv.com`)
+- `allowedOrigins` (string[], optional): Additional allowed origins for postMessage
+- `theme` (object, optional): Theme customization
+  - `primaryColor` (string): Primary color (hex)
+  - `fontSize` (string): Base font size
+  - `borderRadius` (string): Border radius for widget
+- `onComplete` (function, optional): Callback when claim is completed
+- `onError` (function, optional): Callback when error occurs
+- `onClose` (function, optional): Callback when widget is closed
+
+**Returns:** `WidgetAPI` instance
+
+### WidgetAPI
+
+**Methods:**
+
+- `open()`: Open the widget
+- `close()`: Close the widget
+- `destroy()`: Destroy widget and cleanup resources
+
+### Events
+
+The widget communicates via postMessage with the following event types:
+
+#### `widget:ready`
+
+Widget loaded and ready to use.
+
+```javascript
+{
+  type: 'widget:ready'
+}
 ```
 
-## Configuration
+#### `widget:complete`
 
-### WidgetConfig
+Claim submission completed successfully.
 
-| Option | Type | Required | Description |
-|--------|------|----------|-------------|
-| `apiUrl` | string | ✅ | VitalCV API endpoint URL |
-| `allowedOrigins` | string[] | ❌ | Allowed origins for postMessage (security) |
-| `containerId` | string | ❌ | Container element ID (inline mode only) |
-| `mode` | 'modal' \| 'inline' | ❌ | Display mode (default: 'modal') |
-| `branding` | WidgetBranding | ❌ | Brand customization options |
-| `onComplete` | function | ❌ | Callback when claim is submitted |
-| `onError` | function | ❌ | Callback on errors |
-| `onClose` | function | ❌ | Callback when widget is closed |
-
-### WidgetBranding
-
-| Option | Type | Description |
-|--------|------|-------------|
-| `primaryColor` | string | Primary brand color (hex) |
-| `logo` | string | Logo URL |
-| `fontFamily` | string | Custom font family |
-| `borderRadius` | string | Button border radius |
-
-### WidgetResult
-
-The `onComplete` callback receives:
-
-```typescript
+```javascript
 {
-  claimId: string;      // Claim ID
-  statusId: string;     // Status ID for tracking
-  proof?: string;       // Optional proof token
-  npi?: string;         // Provider NPI
+  type: 'widget:complete',
+  data: {
+    claimId: 'claim-uuid',
+    statusId: 'status-uuid',
+    providerId: 'provider-id'
+  }
+}
+```
+
+#### `widget:error`
+
+Error occurred during claim process.
+
+```javascript
+{
+  type: 'widget:error',
+  data: {
+    code: 'INVALID_NPI',
+    message: 'NPI validation failed',
+    details: { ... }
+  }
+}
+```
+
+#### `widget:close`
+
+Widget was closed by user.
+
+```javascript
+{
+  type: 'widget:close'
 }
 ```
 
@@ -168,93 +209,133 @@ The `onComplete` callback receives:
 
 ### Origin Whitelist
 
-Always specify allowed origins to prevent unauthorized access:
+The widget validates postMessage origins. Configure allowed origins:
 
 ```javascript
-const widget = initWidget({
-  apiUrl: 'https://api.vitalcv.com',
+createWidget({
+  containerId: 'widget',
+  apiKey: 'your-key',
   allowedOrigins: [
-    'https://vitalcv.com',
-    'https://yoursite.com'
-  ],
+    'https://yourdomain.com',
+    'https://staging.yourdomain.com'
+  ]
 });
 ```
 
-### Content Security Policy (CSP)
+### Content Security Policy
 
-Add these CSP directives to your site:
+Add these CSP directives to allow widget embedding:
 
 ```html
 <meta http-equiv="Content-Security-Policy" 
-      content="frame-src https://api.vitalcv.com; connect-src https://api.vitalcv.com;">
+  content="
+    frame-src https://api.vitalcv.com;
+    connect-src https://api.vitalcv.com;
+  ">
 ```
 
-### Embed Token
+### Iframe Sandboxing
 
-The widget automatically requests a short-lived embed token from the backend. Tokens expire after 5 minutes.
+The widget uses secure iframe sandboxing:
+
+```
+sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
+```
 
 ## Customization
 
-### Branding
+### Theme
+
+Customize widget appearance:
 
 ```javascript
-const widget = initWidget({
-  apiUrl: 'https://api.vitalcv.com',
-  branding: {
-    primaryColor: '#3b82f6',
-    logo: 'https://yoursite.com/logo.png',
-    fontFamily: 'Inter, sans-serif',
-    borderRadius: '8px',
-  },
-});
-```
-
-### Inline Mode
-
-```html
-<div id="vitalcv-widget-container"></div>
-
-<script>
-  const widget = VitalCV.initWidget({
-    apiUrl: 'https://api.vitalcv.com',
-    mode: 'inline',
-    containerId: 'vitalcv-widget-container',
-  });
-
-  widget.open();
-</script>
-```
-
-## Events
-
-The widget communicates via postMessage:
-
-### Outgoing Events (Widget → Parent)
-
-- `widget:ready` - Widget loaded successfully
-- `widget:complete` - Claim submission completed
-- `widget:error` - Error occurred
-- `widget:close` - Widget closed by user
-- `widget:resize` - Widget height changed (inline mode)
-
-### Handling Events
-
-```javascript
-window.addEventListener('message', (event) => {
-  if (event.origin !== 'https://api.vitalcv.com') return;
-
-  const message = event.data;
-  
-  switch (message.type) {
-    case 'widget:complete':
-      console.log('Claim ID:', message.payload.claimId);
-      break;
-    
-    case 'widget:error':
-      console.error('Error:', message.payload.error);
-      break;
+createWidget({
+  containerId: 'widget',
+  apiKey: 'your-key',
+  theme: {
+    primaryColor: '#1e40af',
+    fontSize: '16px',
+    borderRadius: '12px'
   }
 });
+```
+
+### Size
+
+Control widget size via CSS:
+
+```css
+#vitalcv-widget iframe {
+  width: 100%;
+  height: 700px;
+  max-width: 600px;
+}
+```
+
+## Error Handling
+
+```javascript
+createWidget({
+  containerId: 'widget',
+  apiKey: 'your-key',
+  onError: (error) => {
+    switch (error.code) {
+      case 'INVALID_NPI':
+        alert('Please check the NPI and try again');
+        break;
+      case 'UPLOAD_FAILED':
+        alert('Document upload failed. Please retry.');
+        break;
+      case 'API_ERROR':
+        alert('Service temporarily unavailable');
+        break;
+      default:
+        alert(`Error: ${error.message}`);
+    }
+  }
+});
+```
+
+## Backend Verification
+
+After receiving a completion event, verify the claim with your backend:
+
+```javascript
+onComplete: async (data) => {
+  // Verify with VitalCV API
+  const response = await fetch('https://api.vitalcv.com/api/claim/status', {
+    params: { statusId: data.statusId },
+    headers: {
+      'Authorization': `Bearer ${partnerApiKey}`
+    }
+  });
+  
+  const status = await response.json();
+  
+  if (status.level >= 3) {
+    // Credential verified - proceed with application
+    processApplication(data);
+  }
+}
+```
+
+## TypeScript Support
+
+Full TypeScript definitions included:
+
+```typescript
+import { createWidget, WidgetConfig, WidgetAPI } from '@vitalcv/widget';
+
+const config: WidgetConfig = {
+  containerId: 'widget',
+  apiKey: 'your-key',
+  onComplete: (data) => {
+    // Type-safe data access
+    console.log(data.claimId);
+  }
+};
+
+const widget: WidgetAPI = createWidget(config);
 ```
 
 ## Browser Support
@@ -262,87 +343,61 @@ window.addEventListener('message', (event) => {
 - Chrome/Edge 90+
 - Firefox 88+
 - Safari 14+
-- Mobile Safari (iOS 14+)
-- Chrome Mobile
+- Mobile browsers (iOS Safari, Chrome Android)
 
-## TypeScript
+## CDN Usage
 
-Full TypeScript support with type definitions included:
+```html
+<!-- UMD Bundle -->
+<script src="https://cdn.vitalcv.com/widget/v0.1.0/vitalcv-widget.min.js"></script>
 
-```typescript
-import { VitalCVWidget, WidgetConfig, WidgetResult } from '@vitalcv/widget';
-
-const config: WidgetConfig = {
-  apiUrl: 'https://api.vitalcv.com',
-  onComplete: (result: WidgetResult) => {
-    console.log(result.claimId);
-  },
-};
-
-const widget = new VitalCVWidget(config);
+<script>
+  window.VitalCVWidget.openWidget({
+    containerId: 'widget',
+    apiKey: 'your-key'
+  });
+</script>
 ```
 
-## Testing
+## Development
 
-### Development Mode
-
-```javascript
-const widget = initWidget({
-  apiUrl: 'http://localhost:3000', // Local backend
-  allowedOrigins: ['http://localhost:3001'],
-});
-```
-
-### Mock Mode
-
-Use the stub backend for testing without real credentials:
+### Local Development
 
 ```bash
-export ACAPY_STUB=true
+npm install
 npm run dev
 ```
 
-## Troubleshooting
+### Building
 
-### Widget doesn't load
+```bash
+npm run build
+```
 
-1. Check CSP headers allow iframe from VitalCV domain
-2. Verify `apiUrl` is correct and accessible
-3. Check browser console for CORS errors
-4. Ensure origin is in `allowedOrigins` list
+### Testing
 
-### postMessage not working
+```bash
+npm test
+```
 
-1. Verify origin whitelist includes your domain
-2. Check event listener is set up before opening widget
-3. Ensure HTTPS is used in production
+## Migration Guide
 
-### Token errors
+### From v0.0.x to v0.1.0
 
-1. Tokens expire after 5 minutes
-2. Request new token for each widget open
-3. Verify backend `/api/widget/token` endpoint is accessible
+No breaking changes in v0.1.0.
 
 ## Support
 
-- Documentation: https://docs.vitalcv.com/widget
-- Issues: https://github.com/vitalcv/widget/issues
-- Email: support@vitalcv.com
+- **Documentation**: https://docs.vitalcv.com/widget
+- **Issues**: https://github.com/vitalcv/widget/issues
+- **Email**: support@vitalcv.com
 
 ## License
 
-MIT License - See LICENSE file for details
+MIT © VitalCV
 
-## Version
+---
 
-Current version: **0.1.0** (Pilot)
-
-## Changelog
-
-### v0.1.0 (2024)
-- Initial release
-- Modal and inline modes
-- Brand customization
-- postMessage API
-- TypeScript support
-- React/Vue/Plain JS examples
+**Version:** 0.1.0  
+**Last Updated:** 2024  
+**Status:** Pilot Release

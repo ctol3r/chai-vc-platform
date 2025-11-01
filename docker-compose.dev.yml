@@ -1,0 +1,156 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: vitalcv-postgres
+    environment:
+      POSTGRES_USER: vitalcv
+      POSTGRES_PASSWORD: vitalcv_dev_pass
+      POSTGRES_DB: vitalcv_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vitalcv"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: vitalcv-redis
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # ACA-Py Mock Issuer
+  acapy-mock:
+    build:
+      context: ./dev/aca-mock
+      dockerfile: Dockerfile
+    container_name: vitalcv-acapy-mock
+    ports:
+      - "8031:8031"
+    environment:
+      FLASK_ENV: development
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8031/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Prometheus
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: vitalcv-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./ops/prometheus:/etc/prometheus
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+
+  # Grafana
+  grafana:
+    image: grafana/grafana:latest
+    container_name: vitalcv-grafana
+    ports:
+      - "3001:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_INSTALL_PLUGINS: grafana-piechart-panel
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./ops/grafana/provisioning:/etc/grafana/provisioning
+    depends_on:
+      - prometheus
+
+  # MailHog (SMTP capture for dev)
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: vitalcv-mailhog
+    ports:
+      - "1025:1025"  # SMTP
+      - "8025:8025"  # Web UI
+    environment:
+      MH_STORAGE: maildir
+      MH_MAILDIR_PATH: /maildir
+    volumes:
+      - mailhog_data:/maildir
+
+  # Backend (dev mode)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+      args:
+        NODE_ENV: development
+    container_name: vitalcv-backend
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://vitalcv:vitalcv_dev_pass@postgres:5432/vitalcv_dev
+      REDIS_URL: redis://redis:6379
+      ACAPY_URL: http://acapy-mock:8031
+      ACAPY_STUB: "true"
+      SD_JWT_SIGNING_KEY: dev-secret-key-change-in-production
+      UPLOAD_DIR: /tmp/uploads
+      BACKEND_BASE_URL: http://localhost:3000
+      SMTP_HOST: mailhog
+      SMTP_PORT: "1025"
+    volumes:
+      - ./backend/src:/app/src
+      - ./backend/package.json:/app/package.json
+      - backend_uploads:/tmp/uploads
+    depends_on:
+      - postgres
+      - redis
+      - acapy-mock
+    command: npm run dev
+
+  # Frontend (dev mode)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: vitalcv-frontend
+    ports:
+      - "3002:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:3000
+      NODE_ENV: development
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - backend
+    command: npm run dev
+
+volumes:
+  postgres_data:
+  redis_data:
+  prometheus_data:
+  grafana_data:
+  mailhog_data:
+  backend_uploads:
+
+networks:
+  default:
+    name: vitalcv-network

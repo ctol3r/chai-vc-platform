@@ -1,204 +1,205 @@
 /**
- * VitalCV Widget - Embeddable credential verification widget
- * @packageDocumentation
+ * @vitalcv/widget
+ * Embeddable widget for VitalCV credential verification
  */
 
 export interface WidgetConfig {
-  /** API endpoint URL */
-  apiUrl: string;
+  /** Target container element ID */
+  containerId: string;
+  
+  /** Partner API key */
+  apiKey: string;
+  
+  /** Backend API URL */
+  apiUrl?: string;
+  
   /** Allowed origins for postMessage */
   allowedOrigins?: string[];
-  /** Widget container element ID */
-  containerId?: string;
-  /** Widget mode: 'modal' | 'inline' */
-  mode?: 'modal' | 'inline';
-  /** Brand customization */
-  branding?: {
+  
+  /** Theme customization */
+  theme?: {
     primaryColor?: string;
-    logo?: string;
-    fontFamily?: string;
+    fontSize?: string;
+    borderRadius?: string;
   };
-  /** Callback handlers */
-  onComplete?: (data: WidgetResult) => void;
-  onError?: (error: Error) => void;
+  
+  /** Event handlers */
+  onComplete?: (data: WidgetCompleteData) => void;
+  onError?: (error: WidgetError) => void;
   onClose?: () => void;
 }
 
-export interface WidgetResult {
+export interface WidgetCompleteData {
   claimId: string;
   statusId: string;
-  proof?: string;
+  providerId: string;
 }
 
-export interface WidgetMessage {
-  type: 'widget:ready' | 'widget:complete' | 'widget:error' | 'widget:close';
-  payload?: any;
+export interface WidgetError {
+  code: string;
+  message: string;
+  details?: any;
+}
+
+export interface WidgetAPI {
+  open: () => void;
+  close: () => void;
+  destroy: () => void;
 }
 
 /**
- * VitalCV Widget Class
+ * Initialize VitalCV widget
  */
-export class VitalCVWidget {
-  private config: WidgetConfig;
-  private iframe?: HTMLIFrameElement;
-  private container?: HTMLElement;
-  private token?: string;
+export function createWidget(config: WidgetConfig): WidgetAPI {
+  const {
+    containerId,
+    apiKey,
+    apiUrl = 'https://api.vitalcv.com',
+    allowedOrigins = [],
+    theme = {},
+    onComplete,
+    onError,
+    onClose,
+  } = config;
 
-  constructor(config: WidgetConfig) {
-    this.config = {
-      mode: 'modal',
-      allowedOrigins: ['https://vitalcv.com'],
-      ...config,
-    };
+  let iframe: HTMLIFrameElement | null = null;
+  let container: HTMLElement | null = null;
 
-    this.setupMessageListener();
+  // Validate container exists
+  container = document.getElementById(containerId);
+  if (!container) {
+    throw new Error(`Container element #${containerId} not found`);
   }
 
   /**
-   * Open the widget
+   * Create iframe
    */
-  async open(): Promise<void> {
-    try {
-      // Request embed token from backend
-      const response = await fetch(`${this.config.apiUrl}/api/widget/token`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          origin: window.location.origin,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to obtain widget token');
-      }
-
-      const data = await response.json();
-      this.token = data.token;
-
-      // Create iframe
-      this.createIframe();
-    } catch (err) {
-      if (this.config.onError) {
-        this.config.onError(err as Error);
-      }
-      throw err;
-    }
-  }
-
-  /**
-   * Close the widget
-   */
-  close(): void {
-    if (this.iframe && this.iframe.parentNode) {
-      this.iframe.parentNode.removeChild(this.iframe);
-    }
-
-    if (this.container && this.container.parentNode && this.config.mode === 'modal') {
-      this.container.parentNode.removeChild(this.container);
-    }
-
-    this.iframe = undefined;
-    this.container = undefined;
-
-    if (this.config.onClose) {
-      this.config.onClose();
-    }
-  }
-
-  /**
-   * Create iframe element
-   */
-  private createIframe(): void {
-    const widgetUrl = `${this.config.apiUrl}/widget?token=${this.token}`;
-
-    // Create container for modal mode
-    if (this.config.mode === 'modal') {
-      this.container = document.createElement('div');
-      this.container.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: 10000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      `;
-      document.body.appendChild(this.container);
-    }
-
-    // Create iframe
-    this.iframe = document.createElement('iframe');
-    this.iframe.src = widgetUrl;
-    this.iframe.style.cssText = this.config.mode === 'modal'
-      ? 'width: 90%; max-width: 600px; height: 80%; border: none; border-radius: 8px; background: white;'
-      : 'width: 100%; height: 600px; border: 1px solid #e5e7eb; border-radius: 8px;';
+  function createIframe(): HTMLIFrameElement {
+    const frame = document.createElement('iframe');
+    frame.style.width = '100%';
+    frame.style.height = '600px';
+    frame.style.border = 'none';
+    frame.style.borderRadius = theme.borderRadius || '8px';
     
-    this.iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-popups');
+    // Sandbox attributes for security
+    frame.setAttribute('sandbox', 'allow-same-origin allow-scripts allow-forms allow-popups');
+    
+    // Build widget URL with params
+    const params = new URLSearchParams({
+      apiKey,
+      theme: JSON.stringify(theme),
+      origin: window.location.origin,
+    });
+    
+    frame.src = `${apiUrl}/widget?${params.toString()}`;
+    
+    return frame;
+  }
 
-    // Append to container or specified element
-    const targetElement = this.config.mode === 'modal'
-      ? this.container!
-      : document.getElementById(this.config.containerId || 'vitalcv-widget');
+  /**
+   * Handle postMessage from widget
+   */
+  function handleMessage(event: MessageEvent) {
+    // Verify origin
+    const isAllowedOrigin =
+      event.origin === apiUrl ||
+      allowedOrigins.includes(event.origin);
 
-    if (targetElement) {
-      targetElement.appendChild(this.iframe);
+    if (!isAllowedOrigin) {
+      console.warn('Blocked message from untrusted origin:', event.origin);
+      return;
+    }
+
+    const { type, data } = event.data;
+
+    switch (type) {
+      case 'widget:complete':
+        if (onComplete) {
+          onComplete(data as WidgetCompleteData);
+        }
+        break;
+
+      case 'widget:error':
+        if (onError) {
+          onError(data as WidgetError);
+        }
+        break;
+
+      case 'widget:close':
+        close();
+        if (onClose) {
+          onClose();
+        }
+        break;
+
+      case 'widget:ready':
+        // Widget loaded successfully
+        console.log('VitalCV widget ready');
+        break;
+
+      default:
+        console.warn('Unknown widget message type:', type);
     }
   }
 
   /**
-   * Setup postMessage listener
+   * Open widget
    */
-  private setupMessageListener(): void {
-    window.addEventListener('message', (event) => {
-      // Verify origin
-      const allowedOrigins = this.config.allowedOrigins || [];
-      const apiOrigin = new URL(this.config.apiUrl).origin;
-      
-      if (!allowedOrigins.includes(event.origin) && event.origin !== apiOrigin) {
-        console.warn('VitalCV Widget: Message from unauthorized origin:', event.origin);
-        return;
-      }
+  function open() {
+    if (!container) {
+      throw new Error('Container not found');
+    }
 
-      const message = event.data as WidgetMessage;
+    if (iframe) {
+      return; // Already open
+    }
 
-      switch (message.type) {
-        case 'widget:complete':
-          if (this.config.onComplete) {
-            this.config.onComplete(message.payload);
-          }
-          this.close();
-          break;
+    iframe = createIframe();
+    container.appendChild(iframe);
 
-        case 'widget:error':
-          if (this.config.onError) {
-            this.config.onError(new Error(message.payload?.error || 'Widget error'));
-          }
-          break;
-
-        case 'widget:close':
-          this.close();
-          break;
-
-        case 'widget:ready':
-          console.log('VitalCV Widget ready');
-          break;
-
-        default:
-          console.warn('VitalCV Widget: Unknown message type:', message.type);
-      }
-    });
+    // Listen for postMessage events
+    window.addEventListener('message', handleMessage);
   }
+
+  /**
+   * Close widget
+   */
+  function close() {
+    if (iframe && container) {
+      container.removeChild(iframe);
+      iframe = null;
+    }
+
+    window.removeEventListener('message', handleMessage);
+  }
+
+  /**
+   * Destroy widget and cleanup
+   */
+  function destroy() {
+    close();
+    container = null;
+  }
+
+  // Return API
+  return {
+    open,
+    close,
+    destroy,
+  };
 }
 
 /**
- * Initialize VitalCV Widget
+ * Create widget and auto-open
  */
-export function initWidget(config: WidgetConfig): VitalCVWidget {
-  return new VitalCVWidget(config);
+export function openWidget(config: WidgetConfig): WidgetAPI {
+  const widget = createWidget(config);
+  widget.open();
+  return widget;
 }
 
 // Default export
-export default { VitalCVWidget, initWidget };
+export default {
+  createWidget,
+  openWidget,
+};

@@ -297,6 +297,40 @@ See `docs/privacy-notes.md` for HIPAA & privacy considerations.
 - ✅ Stub implementation for local development
 - ✅ Comprehensive unit tests
 
+#### OIDC4VCI Discovery
+- ✅ `/.well-known/openid-credential-issuer` - OIDC4VCI metadata
+- ✅ `/.well-known/jwks.json` - JSON Web Key Set
+- ✅ `/.well-known/did-configuration.json` - DID configuration
+- ✅ Metadata validation tests
+- ✅ Credential type definitions
+
+#### Widget Package (@vitalcv/widget)
+- ✅ NPM package scaffold
+- ✅ TypeScript types and interfaces
+- ✅ PostMessage handshake implementation
+- ✅ Origin whitelist security
+- ✅ Theme customization support
+- ✅ React/Vue/Plain JS examples
+- ✅ Comprehensive README
+
+#### Issuer Portal
+- ✅ `/issuer/issue` - Credential issuance UI
+- ✅ Provider search by NPI
+- ✅ Template selection
+- ✅ Attribute entry forms
+- ✅ Evidence attachment
+- ✅ Preview and confirmation
+- ✅ Status tracking
+
+#### DevOps
+- ✅ `docker-compose.dev.yml` - Local development stack
+- ✅ ACA-Py mock server (Flask)
+- ✅ Prometheus configuration
+- ✅ Grafana setup
+- ✅ MailHog (SMTP capture)
+- ✅ Argo Rollouts canary deployment policy
+- ✅ SLO alert rules
+
 ## Contributors
 
 [Add contributors]

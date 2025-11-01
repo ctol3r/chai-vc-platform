@@ -1,0 +1,124 @@
+groups:
+  - name: vitalcv_slo_alerts
+    interval: 30s
+    rules:
+      # PSV Accuracy Low
+      - alert: PSVAccuracyLow
+        expr: psv_accuracy_ratio < 0.95
+        for: 5m
+        labels:
+          severity: warning
+          component: psv
+        annotations:
+          summary: "PSV accuracy below SLO threshold"
+          description: "PSV accuracy is {{ $value | humanizePercentage }} (threshold: 95%)"
+          runbook_url: "https://docs.vitalcv.com/runbooks/psv-accuracy"
+
+      - alert: PSVAccuracyCritical
+        expr: psv_accuracy_ratio < 0.85
+        for: 2m
+        labels:
+          severity: critical
+          component: psv
+        annotations:
+          summary: "PSV accuracy critically low"
+          description: "PSV accuracy is {{ $value | humanizePercentage }} (critical threshold: 85%)"
+          runbook_url: "https://docs.vitalcv.com/runbooks/psv-accuracy"
+
+      # High Time to Privilege
+      - alert: HighTimeToPrivilege
+        expr: |
+          histogram_quantile(0.90, 
+            rate(ttp_seconds_bucket[1h])
+          ) > 2592000
+        for: 10m
+        labels:
+          severity: warning
+          component: workflow
+        annotations:
+          summary: "Time to Privilege (P90) exceeds SLO"
+          description: "TTP P90 is {{ $value | humanizeDuration }} (threshold: 30 days)"
+          runbook_url: "https://docs.vitalcv.com/runbooks/high-ttp"
+
+      # FPPE Trigger Rate High
+      - alert: FPPETriggerRateHigh
+        expr: fppe_trigger_ratio > 0.10
+        for: 15m
+        labels:
+          severity: warning
+          component: compliance
+        annotations:
+          summary: "FPPE trigger rate above threshold"
+          description: "FPPE rate is {{ $value | humanizePercentage }} (threshold: 10%)"
+          runbook_url: "https://docs.vitalcv.com/runbooks/fppe-rate"
+
+      # Adverse Finding Missed
+      - alert: AdverseFindingMissed
+        expr: increase(adverse_miss_count[1h]) > 0
+        labels:
+          severity: critical
+          component: compliance
+        annotations:
+          summary: "Adverse finding missed during verification"
+          description: "{{ $value }} adverse findings missed in the last hour"
+          runbook_url: "https://docs.vitalcv.com/runbooks/adverse-miss"
+
+      # Evidence Completeness Low
+      - alert: EvidenceCompletenessLow
+        expr: evidence_complete_ratio < 0.90
+        for: 10m
+        labels:
+          severity: warning
+          component: evidence
+        annotations:
+          summary: "Evidence completeness below SLO"
+          description: "Evidence completeness is {{ $value | humanizePercentage }} (threshold: 90%)"
+          runbook_url: "https://docs.vitalcv.com/runbooks/evidence-completeness"
+
+      # Backend Error Rate
+      - alert: HighErrorRate
+        expr: |
+          sum(rate(http_requests_total{status=~"5.."}[5m]))
+          /
+          sum(rate(http_requests_total[5m])) > 0.02
+        for: 5m
+        labels:
+          severity: warning
+          component: backend
+        annotations:
+          summary: "High backend error rate"
+          description: "Error rate is {{ $value | humanizePercentage }}"
+
+      # Queue Backlog
+      - alert: CredentialQueueBacklog
+        expr: |
+          sum(bull_queue_waiting{queue="credential-issuance"}) > 100
+        for: 10m
+        labels:
+          severity: warning
+          component: queue
+        annotations:
+          summary: "Credential issuance queue backlog"
+          description: "{{ $value }} jobs waiting in credential queue"
+
+      # Redis Down
+      - alert: RedisDown
+        expr: up{job="redis"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          component: infrastructure
+        annotations:
+          summary: "Redis is down"
+          description: "Redis cache is unavailable"
+
+      # Database Down
+      - alert: DatabaseDown
+        expr: up{job="postgres"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: infrastructure
+        annotations:
+          summary: "PostgreSQL is down"
+          description: "Database is unavailable"

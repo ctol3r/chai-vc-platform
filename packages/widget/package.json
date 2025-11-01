@@ -1,7 +1,7 @@
 {
   "name": "@vitalcv/widget",
   "version": "0.1.0",
-  "description": "VitalCV embeddable widget for credential verification",
+  "description": "Embeddable VitalCV credential widget for partner integration",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
@@ -14,26 +14,22 @@
     "prepublishOnly": "npm run build"
   },
   "keywords": [
-    "vitalcv",
-    "credentials",
-    "verification",
+    "verifiable-credentials",
+    "healthcare",
     "widget",
-    "healthcare"
+    "embed"
   ],
-  "author": "VitalCV Team",
+  "author": "VitalCV",
   "license": "MIT",
   "peerDependencies": {
-    "react": ">=16.8.0",
-    "react-dom": ">=16.8.0"
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^25.0.7",
-    "@rollup/plugin-node-resolve": "^15.2.3",
-    "@rollup/plugin-typescript": "^11.1.6",
-    "@types/react": "^18.2.0",
-    "@types/react-dom": "^18.2.0",
-    "rollup": "^4.9.6",
-    "tslib": "^2.6.2",
-    "typescript": "^5.3.3"
+    "@rollup/plugin-commonjs": "^25.0.0",
+    "@rollup/plugin-node-resolve": "^15.0.0",
+    "@rollup/plugin-typescript": "^11.0.0",
+    "rollup": "^3.29.0",
+    "typescript": "^5.0.0"
   }
 }

@@ -1,0 +1,192 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: vitalcv-backend
+  namespace: vitalcv
+spec:
+  replicas: 3
+  strategy:
+    canary:
+      # Canary steps: 10% every 5 minutes
+      steps:
+        - setWeight: 10
+        - pause: { duration: 5m }
+        - setWeight: 25
+        - pause: { duration: 5m }
+        - setWeight: 50
+        - pause: { duration: 5m }
+        - setWeight: 75
+        - pause: { duration: 5m }
+      
+      # Analysis for auto-rollback
+      analysis:
+        templates:
+          - templateName: success-rate
+        startingStep: 1  # Start analysis after first canary step
+        args:
+          - name: service-name
+            value: vitalcv-backend
+
+      # Traffic routing
+      trafficRouting:
+        nginx:
+          stableIngress: vitalcv-backend-stable
+          additionalIngressAnnotations:
+            canary-by-header: X-Canary
+            canary-by-header-value: always
+
+      # Auto rollback on errors
+      maxSurge: "25%"
+      maxUnavailable: 0
+
+  revisionHistoryLimit: 5
+  
+  selector:
+    matchLabels:
+      app: vitalcv-backend
+  
+  template:
+    metadata:
+      labels:
+        app: vitalcv-backend
+    spec:
+      containers:
+        - name: backend
+          image: vitalcv/backend:latest
+          ports:
+            - containerPort: 3000
+              name: http
+          
+          env:
+            - name: NODE_ENV
+              value: production
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: vitalcv-secrets
+                  key: redis-url
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: vitalcv-secrets
+                  key: database-url
+            - name: ACAPY_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: vitalcv-config
+                  key: acapy-url
+          
+          # Health checks
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            successThreshold: 1
+            failureThreshold: 3
+          
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: success-rate
+  namespace: vitalcv
+spec:
+  args:
+    - name: service-name
+  metrics:
+    # Check health endpoint
+    - name: health-check
+      interval: 30s
+      failureLimit: 2
+      provider:
+        web:
+          url: "http://{{args.service-name}}:3000/api/health"
+          jsonPath: "{$.status}"
+          successCondition: "result == 'healthy'"
+    
+    # Check error rate from Prometheus
+    - name: error-rate
+      interval: 1m
+      failureLimit: 3
+      provider:
+        prometheus:
+          address: http://prometheus.monitoring:9090
+          query: |
+            sum(rate(http_requests_total{status=~"5..", service="{{args.service-name}}"}[5m]))
+            /
+            sum(rate(http_requests_total{service="{{args.service-name}}"}[5m]))
+          successCondition: result < 0.02  # Less than 2% error rate
+    
+    # Check verify success ratio
+    - name: verify-success-rate
+      interval: 1m
+      failureLimit: 2
+      provider:
+        prometheus:
+          address: http://prometheus.monitoring:9090
+          query: |
+            psv_accuracy_ratio
+          successCondition: result >= 0.93  # At least 93% during canary
+    
+    # Check P90 latency
+    - name: p90-latency
+      interval: 1m
+      failureLimit: 3
+      provider:
+        prometheus:
+          address: http://prometheus.monitoring:9090
+          query: |
+            histogram_quantile(0.90, 
+              rate(vitalcv_command_latency_seconds_bucket[5m])
+            )
+          successCondition: result < 2.0  # P90 under 2 seconds
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vitalcv-backend-stable
+  namespace: vitalcv
+spec:
+  selector:
+    app: vitalcv-backend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vitalcv-backend-canary
+  namespace: vitalcv
+spec:
+  selector:
+    app: vitalcv-backend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
+  type: ClusterIP
