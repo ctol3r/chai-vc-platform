@@ -1,0 +1,10 @@
+{"agent":"CURSOR • AGENT","repo":"chai-vc-platform","title":"Run backend test suite","task":"Execute: cd backend && npm test. Capture results, open issues for any failures with stack traces attached."}
+{"agent":"CURSOR • AGENT","repo":"chai-vc-platform","title":"Validate Ed25519 signatures","task":"Run ed25519.test.ts and verify all 20+ tests pass. Attach test output and coverage report."}
+{"agent":"CURSOR • AGENT","repo":"chai-vc-platform","title":"Test circuit breaker behavior","task":"Simulate ACA-Py failures and verify circuit breaker opens after 5 failures. Record state transitions."}
+{"agent":"CURSOR • AGENT","repo":"chai-vc-platform","title":"Run Merkle anchoring smoke test","task":"Create batch of 100 events, verify Merkle root generation and proof validation. Measure performance."}
+{"agent":"CURSOR • AGENT","repo":"v0-vital-cv-frontend-mvp","title":"Test ClaimWizard e2e flow","task":"Automate: enter NPI → upload files → submit → verify status updates. Screenshot each step."}
+{"agent":"CURSOR • AGENT","repo":"v0-vital-cv-frontend-mvp","title":"Test SLO Dashboard","task":"Navigate to /dashboard/slo, verify metrics load, charts render, and alerts show correctly."}
+{"agent":"CURSOR • AGENT","repo":"chai-vc-platform","title":"Health check validation","task":"Call /api/health and verify all subchecks (Redis, DB, Prometheus) return healthy status."}
+{"agent":"CURSOR • AGENT","repo":"v0-vital-cv-frontend-mvp","title":"Test issuer portal","task":"Navigate to /issuer/issue, search NPI, select template, submit issuance. Verify request succeeds."}
+{"agent":"CURSOR • AGENT","repo":"chai-vc-platform","title":"OIDC4VCI compliance check","task":"Validate /.well-known/openid-credential-issuer against OIDC4VCI spec. Generate compliance report."}
+{"agent":"CURSOR • AGENT","repo":"chai-vc-platform","title":"Build and verify Docker images","task":"Build backend/frontend Docker images, run containers, verify health checks pass."}
