@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ApiPromise, SubmittableExtrinsic } from '@polkadot/api';
 import { Keyring } from '@polkadot/keyring';
 

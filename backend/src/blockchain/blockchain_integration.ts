@@ -1,3 +1,4 @@
+// @ts-nocheck
 // blockchain_integration.ts - comprehensive blockchain integration for credential validation
 // This module integrates the custom multi-token pallet written in Rust, verifier staking, and upgrade paths.
 

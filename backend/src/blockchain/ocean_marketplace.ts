@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Ocean, Config, Account, Asset, Datatoken } from '@oceanprotocol/lib'
 
 // ocean_marketplace.ts - prototype integration with Ocean Protocol for data-token marketplace

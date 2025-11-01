@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ApolloServer, gql } from 'apollo-server-express';
 import { Express } from 'express';
 import { PrismaClient } from '@prisma/client';

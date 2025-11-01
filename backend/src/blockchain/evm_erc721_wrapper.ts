@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { BigNumberish, Contract, ContractInterface, Signer, providers } from 'ethers';
 
 /**

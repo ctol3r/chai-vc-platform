@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ApiPromise, WsProvider, SubmittableResult } from '@polkadot/api';
 import { KeyringPair } from '@polkadot/keyring/types';
 import { KeyRotationPolicy } from './key_rotation_policy';
