@@ -29,6 +29,7 @@ app.use('/api/metrics', require('./routes/metrics').default);
 app.use('/api/health', require('./routes/health').default);
 app.use('/api/vc', require('./routes/vc').default);
 app.use('/api/issuer', require('./routes/issuer').default);
+app.use('/api/anchor', require('./routes/anchor').default);
 app.use('/.well-known', require('./routes/wellknown').default);
 
 app.get('/metrics', metricsHandler);

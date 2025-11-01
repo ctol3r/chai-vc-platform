@@ -1,5 +1,5 @@
 import { randomBytes, createHash } from 'crypto';
-import * as jwt from 'jsonwebtoken';
+import { createJWS, verifyJWS, getSigningKeyPair } from './ed25519';
 
 /**
  * SD-JWT (Selective Disclosure JWT) utilities
@@ -56,13 +56,14 @@ export function createDisclosure(salt: string, key: string, value: any): string 
 
 /**
  * Issue an SD-JWT with selective disclosure
+ * Now using Ed25519 instead of HMAC
  */
-export function issueSDJWT(
+export async function issueSDJWT(
   claims: SDJWTClaim[],
   issuer: string,
   subject: string,
   signingKey: string
-): SDJWTIssueResult {
+): Promise<SDJWTIssueResult> {
   const salts: SDJWTSalt[] = [];
   const disclosures: string[] = [];
   const _sd: string[] = [];
@@ -101,8 +102,8 @@ export function issueSDJWT(
     payload._sd_alg = 'sha-256';
   }
 
-  // Sign the JWT
-  const token = jwt.sign(payload, signingKey, { algorithm: 'HS256' });
+  // Sign the JWT with Ed25519
+  const token = await createJWS(payload, signingKey);
 
   // Build SD-JWT format: JWT~disclosure1~disclosure2~...
   const sdJWT = [token, ...disclosures].join('~');
@@ -125,19 +126,28 @@ export function issueSDJWT(
 
 /**
  * Verify an SD-JWT and extract disclosed claims
+ * Now using Ed25519 verification
  */
-export function verifySDJWT(
+export async function verifySDJWT(
   sdJWT: string,
   verifyKey: string,
   requiredDisclosures?: string[]
-): SDJWTVerifyResult {
+): Promise<SDJWTVerifyResult> {
   try {
     const parts = sdJWT.split('~');
     const token = parts[0];
     const disclosures = parts.slice(1).filter((d) => d.length > 0);
 
-    // Verify JWT signature
-    const payload: any = jwt.verify(token, verifyKey, { algorithms: ['HS256'] });
+    // Verify JWT signature with Ed25519
+    const verifyResult = await verifyJWS(token, verifyKey);
+    if (!verifyResult.valid || !verifyResult.payload) {
+      return {
+        valid: false,
+        claims: {},
+        errors: [verifyResult.error || 'Signature verification failed'],
+      };
+    }
+    const payload: any = verifyResult.payload;
 
     const claims: any = { ...payload };
     const errors: string[] = [];

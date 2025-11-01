@@ -8,14 +8,22 @@ import {
   SDJWTSalt,
 } from "../lib/sdjwt";
 import { auditLog } from "../controllers/audit";
+import { getSigningKeyPair } from "../lib/ed25519";
 
 const router = express.Router();
 
 // In-memory storage for salts (replace with DB in production)
 const saltStorage: Record<string, SDJWTSalt[]> = {};
 
-// Signing key (should be from environment/secrets in production)
-const SIGNING_KEY = process.env.SD_JWT_SIGNING_KEY || "pilot-secret-key-change-in-production";
+// Ed25519 keypair (lazy-loaded)
+let keyPairCache: Awaited<ReturnType<typeof getSigningKeyPair>> | null = null;
+
+async function getKeys() {
+  if (!keyPairCache) {
+    keyPairCache = await getSigningKeyPair();
+  }
+  return keyPairCache;
+}
 
 /**
  * POST /api/vc/sd-issue
@@ -37,12 +45,15 @@ router.post("/sd-issue", async (req, res) => {
       selectable: c.selectable !== false, // Default to selectable
     }));
 
-    // Issue SD-JWT
-    const result = issueSDJWT(
+    // Get Ed25519 keypair
+    const keys = await getKeys();
+
+    // Issue SD-JWT with Ed25519
+    const result = await issueSDJWT(
       validClaims,
       issuer || "https://vitalcv.com",
       subject || user.id,
-      SIGNING_KEY
+      keys.privateKeyHex
     );
 
     // Store salts for this issuance
@@ -81,8 +92,11 @@ router.post("/sd-verify", async (req, res) => {
       return res.status(400).json({ error: "token required" });
     }
 
-    // Verify SD-JWT
-    const result = verifySDJWT(token, SIGNING_KEY, requiredClaims);
+    // Get Ed25519 public key
+    const keys = await getKeys();
+
+    // Verify SD-JWT with Ed25519
+    const result = await verifySDJWT(token, keys.publicKeyHex, requiredClaims);
 
     await auditLog(user.id, "vc.sd-jwt.verify", {
       valid: result.valid,

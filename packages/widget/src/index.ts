@@ -33,6 +33,8 @@ export interface WidgetCompleteData {
   claimId: string;
   statusId: string;
   providerId: string;
+  sdJWT?: string;
+  disclosedClaims?: string[];
 }
 
 export interface WidgetError {

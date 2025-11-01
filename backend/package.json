@@ -47,7 +47,9 @@
     "@sd-jwt/hash": "^0.7.0",
     "@sd-jwt/decode": "^0.7.0",
     "@sd-jwt/present": "^0.7.0",
-    "@sd-jwt/jwt-status-list": "^0.7.0"
+    "@sd-jwt/jwt-status-list": "^0.7.0",
+    "@noble/ed25519": "^2.0.0",
+    "@noble/hashes": "^1.3.3"
   },
   "devDependencies": {
     "@types/bull": "^4.10.0",

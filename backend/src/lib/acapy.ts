@@ -3,7 +3,7 @@ import https from 'https';
 
 /**
  * ACA-Py (Aries Cloud Agent - Python) Client
- * Secure client for interacting with ACA-Py for credential issuance
+ * Secure client with retries, circuit-breaker, and observability
  */
 
 export interface ACAPayConfig {
@@ -11,6 +11,15 @@ export interface ACAPayConfig {
   apiKey?: string;
   useTLS?: boolean;
   rejectUnauthorized?: boolean;
+  timeout?: number;
+  maxRetries?: number;
+  retryDelay?: number;
+}
+
+interface CircuitBreakerState {
+  failures: number;
+  lastFailureTime: number;
+  state: 'closed' | 'open' | 'half-open';
 }
 
 export interface CredentialDefinition {
@@ -47,10 +56,24 @@ export class ACAPayClient {
   private baseUrl: string;
   private apiKey?: string;
   private agent: https.Agent | undefined;
+  private timeout: number;
+  private maxRetries: number;
+  private retryDelay: number;
+  private circuitBreaker: CircuitBreakerState;
 
   constructor(config: ACAPayConfig) {
     this.baseUrl = config.baseUrl.replace(/\/$/, ''); // Remove trailing slash
     this.apiKey = config.apiKey;
+    this.timeout = config.timeout || 10000; // 10 seconds default
+    this.maxRetries = config.maxRetries || 3;
+    this.retryDelay = config.retryDelay || 1000; // 1 second
+
+    // Circuit breaker state
+    this.circuitBreaker = {
+      failures: 0,
+      lastFailureTime: 0,
+      state: 'closed',
+    };
 
     // Configure HTTPS agent for TLS
     if (config.useTLS) {
@@ -61,13 +84,63 @@ export class ACAPayClient {
   }
 
   /**
-   * Make an authenticated request to ACA-Py
+   * Check circuit breaker state
+   */
+  private checkCircuitBreaker(): void {
+    const now = Date.now();
+    const resetTime = 60000; // 1 minute
+
+    if (this.circuitBreaker.state === 'open') {
+      // Check if enough time has passed to try half-open
+      if (now - this.circuitBreaker.lastFailureTime > resetTime) {
+        this.circuitBreaker.state = 'half-open';
+        this.circuitBreaker.failures = 0;
+      } else {
+        throw new Error('Circuit breaker is OPEN - ACA-Py unavailable');
+      }
+    }
+  }
+
+  /**
+   * Record success/failure for circuit breaker
+   */
+  private recordResult(success: boolean): void {
+    if (success) {
+      if (this.circuitBreaker.state === 'half-open') {
+        // Success in half-open, close the circuit
+        this.circuitBreaker.state = 'closed';
+      }
+      this.circuitBreaker.failures = 0;
+    } else {
+      this.circuitBreaker.failures++;
+      this.circuitBreaker.lastFailureTime = Date.now();
+
+      // Open circuit after 5 consecutive failures
+      if (this.circuitBreaker.failures >= 5) {
+        this.circuitBreaker.state = 'open';
+        console.error('Circuit breaker OPENED for ACA-Py');
+      }
+    }
+  }
+
+  /**
+   * Sleep for retry delay
+   */
+  private async sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  /**
+   * Make an authenticated request to ACA-Py with retries and circuit breaker
    */
   private async request(
     method: string,
     path: string,
     body?: any
   ): Promise<any> {
+    // Check circuit breaker
+    this.checkCircuitBreaker();
+
     const url = `${this.baseUrl}${path}`;
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -81,24 +154,63 @@ export class ACAPayClient {
       method,
       headers,
       agent: this.agent,
+      timeout: this.timeout,
     };
 
     if (body) {
       options.body = JSON.stringify(body);
     }
 
-    try {
-      const response = await fetch(url, options);
-      
-      if (!response.ok) {
-        const error = await response.text();
-        throw new Error(`ACA-Py request failed: ${response.status} - ${error}`);
-      }
+    // Retry logic
+    let lastError: Error | null = null;
+    for (let attempt = 0; attempt <= this.maxRetries; attempt++) {
+      try {
+        const startTime = Date.now();
+        const response = await fetch(url, options);
+        const latency = Date.now() - startTime;
 
-      return await response.json();
-    } catch (err: any) {
-      throw new Error(`ACA-Py connection error: ${err.message}`);
+        // Log slow requests
+        if (latency > 5000) {
+          console.warn(`Slow ACA-Py request: ${method} ${path} took ${latency}ms`);
+        }
+
+        if (!response.ok) {
+          const error = await response.text();
+          throw new Error(`ACA-Py request failed: ${response.status} - ${error}`);
+        }
+
+        const result = await response.json();
+
+        // Record success
+        this.recordResult(true);
+
+        return result;
+      } catch (err: any) {
+        lastError = err;
+
+        // Don't retry on client errors (4xx)
+        if (err.message && err.message.includes('400')) {
+          this.recordResult(false);
+          throw err;
+        }
+
+        // Retry on network/server errors
+        if (attempt < this.maxRetries) {
+          const delay = this.retryDelay * Math.pow(2, attempt); // Exponential backoff
+          console.warn(
+            `ACA-Py request failed (attempt ${attempt + 1}/${this.maxRetries + 1}), retrying in ${delay}ms:`,
+            err.message
+          );
+          await this.sleep(delay);
+        }
+      }
     }
+
+    // All retries exhausted
+    this.recordResult(false);
+    throw new Error(
+      `ACA-Py connection error after ${this.maxRetries + 1} attempts: ${lastError?.message}`
+    );
   }
 
   /**
