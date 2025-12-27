@@ -13,6 +13,7 @@ jobs:
       ai: ${{ steps.filter.outputs.ai }}
       docs: ${{ steps.filter.outputs.docs }}
       e2e: ${{ steps.filter.outputs.e2e }}
+      substrate: ${{ steps.filter.outputs.substrate }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
