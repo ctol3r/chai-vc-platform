@@ -1,6 +1,8 @@
 import { ApolloServer, gql } from 'apollo-server-express';
 import { Express } from 'express';
 import { PrismaClient } from '@prisma/client';
+import { AuditScrapbook } from '../blockchain/audit_scrapbook';
+import { PolkadotService } from '../blockchain/polkadot_service';
 
 // Comprehensive GraphQL schema integrating Express Apollo Server with Prisma
 const typeDefs = gql`
@@ -52,14 +54,80 @@ const typeDefs = gql`
     ): Credential
     postJob(title: String!, description: String, postedBy: ID!): Job
     applyForJob(jobId: ID!, userId: ID!): Job
+    authorizeIssuer(account: String!): Boolean!
+    deauthorizeIssuer(account: String!): Boolean!
   }
 `;
 
+type GraphQLContext = {
+  prisma: PrismaClient;
+  user?: {
+    roles?: string[];
+  };
+};
+
+const polkadotService = new PolkadotService();
+const auditScrapbook = new AuditScrapbook(polkadotService);
+
+function assertAdmin(context: GraphQLContext) {
+  if (!context.user?.roles?.includes('admin')) {
+    throw new Error('Unauthorized: admin role required');
+  }
+}
+
+async function handleTrustRegistryMutation(
+  action: 'authorize' | 'deauthorize',
+  account: string,
+  context: GraphQLContext
+): Promise<boolean> {
+  assertAdmin(context);
+
+  const trimmed = account.trim();
+  if (!trimmed) {
+    return false;
+  }
+
+  const auditAction = `${action.toUpperCase()}_ISSUER:${trimmed}`;
+
+  try {
+    if (action === 'authorize') {
+      await polkadotService.authorizeIssuer(trimmed);
+    } else {
+      await polkadotService.deauthorizeIssuer(trimmed);
+    }
+    await auditScrapbook.recordIdentityAction('trust-registry-admin', auditAction);
+    return true;
+  } catch (error) {
+    console.error(`Failed to ${action} issuer`, error);
+    await auditScrapbook.recordIdentityAction(
+      'trust-registry-admin',
+      `FAILED_${auditAction}`
+    );
+    return false;
+  }
+}
+
 const resolvers = {
   Query: {
-    credentials: async (_parent: unknown, _args: unknown, ctx: { prisma: PrismaClient }) => {
+    credentials: async (
+      _parent: unknown,
+      _args: unknown,
+      ctx: GraphQLContext
+    ) => {
       return ctx.prisma.credential.findMany();
     },
+  },
+  Mutation: {
+    authorizeIssuer: async (
+      _parent: unknown,
+      args: { account: string },
+      context: GraphQLContext
+    ): Promise<boolean> => handleTrustRegistryMutation('authorize', args.account, context),
+    deauthorizeIssuer: async (
+      _parent: unknown,
+      args: { account: string },
+      context: GraphQLContext
+    ): Promise<boolean> => handleTrustRegistryMutation('deauthorize', args.account, context),
   },
 };
 
@@ -67,7 +135,7 @@ export async function startApolloServer(app: Express, prisma: PrismaClient) {
   const server = new ApolloServer({
     typeDefs,
     resolvers,
-    context: () => ({ prisma }),
+    context: ({ req }) => ({ prisma, user: (req as any)?.user }),
   });
   await server.start();
   server.applyMiddleware({ app });

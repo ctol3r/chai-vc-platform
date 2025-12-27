@@ -1,0 +1,10 @@
+[workspace]
+members = [
+  "pallets/credential",
+  "pallets/did"
+]
+resolver = "2"
+
+[patch.crates-io]
+schnorrkel = { path = "vendor/schnorrkel-0.9.1" }
+substrate-bip39 = { path = "vendor/substrate-bip39" }
