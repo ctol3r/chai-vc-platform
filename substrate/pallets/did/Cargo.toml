@@ -1,5 +1,5 @@
 [package]
-name = "pallet-credential"
+name = "pallet-did"
 version = "0.1.0"
 edition = "2021"
 
@@ -26,4 +26,3 @@ std = [
     "frame-benchmarking/std",
 ]
 runtime-benchmarks = ["frame-benchmarking"]
-generated-weights = []

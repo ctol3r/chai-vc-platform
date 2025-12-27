@@ -135,7 +135,32 @@ The `frontend/vault` folder contains a small example of client-side encryption h
 
 ## Compliance Dashboard
 
-SOC 2 compliance artifacts are published from the `compliance/` directory. A GitHub Actions workflow (`publish_soc2_dashboard.yml`) deploys the contents of this folder to GitHub Pages whenever updates are pushed to `main`.
+SOC 2 compliance artifacts are published from the `compliance/` directory. A GitHub Actions workflow deploys the contents of this folder to GitHub Pages whenever updates are pushed to `main`. A nightly workflow also bumps the dashboard timestamp.
+
+## Rust Workspace
+
+This repo includes Substrate FRAME pallets and a minimal runtime example.
+
+- Workspace manifest: top-level `Cargo.toml` (virtual workspace)
+- Pallets:
+  - `substrate/pallets/did` (package: `pallet-did`)
+  - `substrate/pallets/credential` (package: `pallet-credential`)
+- Example Runtime:
+  - `substrate/runtime-example` (package: `chai-runtime-example`)
+
+Build and test (requires Rust/cargo installed):
+
+```
+cargo build -p pallet-did
+cargo build -p pallet-credential
+cargo build -p chai-runtime-example
+
+cargo test  -p pallet-did
+cargo test  -p pallet-credential
+cargo test  -p chai-runtime-example
+```
+
+Note: there is no `runtime/` crate in this repo; use `chai-runtime-example` instead.
 
 ## Trust Registry Smart Contract
 

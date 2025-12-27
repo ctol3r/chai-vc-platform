@@ -11,7 +11,10 @@
     "start": "node dist/server.js",
     "test": "jest",
     "seed": "ts-node prisma/seed.ts",
-    "prisma:generate": "prisma generate"
+    "prisma:generate": "prisma generate",
+    "db:gen": "prisma generate",
+    "db:migrate": "prisma migrate deploy",
+    "db:reset": "prisma migrate reset --force"
   },
   "keywords": [],
   "author": "",

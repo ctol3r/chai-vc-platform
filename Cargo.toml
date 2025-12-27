@@ -1,0 +1,28 @@
+[workspace]
+members = [
+  "substrate/pallets/did",
+  "substrate/pallets/credential",
+  "substrate/runtime-example",
+  "substrate/node-example",
+]
+resolver = "2"
+
+[workspace.dependencies]
+# Core Substrate primitives (align versions across members)
+sp-runtime = "42.0.0"
+sp-io = "22.0.0"
+sp-core = "21.0.0"
+
+# FRAME crates
+frame-support = "41.0.0"
+frame-system = "41.0.0"
+frame-benchmarking = { version = "41.0.0", default-features = false }
+frame-benchmarking-cli = { version = "41.0.0", default-features = false }
+
+# Node crates (add concrete versions when wiring a full node)
+# sc-cli = "<align-to-your-substrate-release>"
+# sc-service = "<align-to-your-substrate-release>"
+# sc-executor = "<align-to-your-substrate-release>"
+# sc-client-db = "<align-to-your-substrate-release>"
+# sc-telemetry = "<align-to-your-substrate-release>"
+# sc-tracing = "<align-to-your-substrate-release>"

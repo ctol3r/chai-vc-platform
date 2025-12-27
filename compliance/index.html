@@ -5,11 +5,36 @@
     <title>Chai VC Platform - SOC 2 Compliance Dashboard</title>
 </head>
 <body>
-    <h1>SOC 2 Compliance Dashboard</h1>
-    <p>This page lists publicly available compliance artifacts.</p>
+    <h1>SOC 2 / GDPR Compliance Dashboard</h1>
+    <p>This page lists publicly available compliance artifacts and status metrics.</p>
     <ul>
         <li><a href="README.md">Readme</a></li>
-        <!-- Add links to additional SOC 2 artifacts here -->
+        <li><a href="data/metrics.json">Raw metrics JSON</a></li>
     </ul>
+
+    <h2>Live Metrics</h2>
+    <div id="metrics">Loading...</div>
+
+    <script>
+      async function loadMetrics() {
+        const el = document.getElementById('metrics');
+        try {
+          const res = await fetch('./data/metrics.json', { cache: 'no-store' });
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          const m = await res.json();
+          el.innerHTML = `
+            <p><strong>Last Updated:</strong> ${m.lastUpdated || 'n/a'}</p>
+            <ul>
+              <li><strong>SOC2:</strong> ${m.soc2?.status || 'unknown'} — ${m.soc2?.notes || ''}</li>
+              <li><strong>GDPR:</strong> ${m.gdpr?.status || 'unknown'} — ${m.gdpr?.notes || ''}</li>
+              <li><strong>DR Drills:</strong> ${m.disasterRecovery?.status || 'unknown'} — ${m.disasterRecovery?.notes || ''}</li>
+            </ul>
+          `;
+        } catch (e) {
+          el.textContent = 'Failed to load metrics: ' + e.message;
+        }
+      }
+      loadMetrics();
+    </script>
 </body>
 </html>
