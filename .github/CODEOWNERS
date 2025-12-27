@@ -1,0 +1,5 @@
+# Code owners for Chai VC Platform
+# Lines format: <pattern> <owner>
+* @openai
+backend/ @openai
+frontend/ @openai
