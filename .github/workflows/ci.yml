@@ -13,6 +13,7 @@ jobs:
       ai: ${{ steps.filter.outputs.ai }}
       docs: ${{ steps.filter.outputs.docs }}
       e2e: ${{ steps.filter.outputs.e2e }}
+      rust: ${{ steps.filter.outputs.rust }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
@@ -35,6 +36,10 @@ jobs:
               - 'e2e/**'
               - 'backend/**'
               - 'ai-matcher-service/**'
+            rust:
+              - 'pallets/**'
+              - 'substrate/**'
+              - 'identity-governance-pallet/**'
 
   python-tests:
     needs: detect-changes
@@ -42,7 +47,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.10','3.11']
+        python-version: ['3.11']
         service: ['ai-matcher-service','backend']
     steps:
       - uses: actions/checkout@v4
@@ -62,8 +67,8 @@ jobs:
           python -m pip install -U pip
           if [ -f requirements.lock.txt ]; then pip install -r requirements.lock.txt; \
           elif [ -f requirements.txt ]; then pip install -r requirements.txt; \
-          else python -m pip install pytest; fi
-          pytest -q
+          else python -m pip install pytest pytest-cov; fi
+          pytest --cov=src --cov-report=xml --cov-fail-under=80 -q
 
   typescript-tests:
     needs: detect-changes
@@ -85,7 +90,26 @@ jobs:
         run: npm run build --if-present
       - name: Test
         working-directory: backend
-        run: npm test --if-present
+        run: npm test -- --coverage --coverageReporters=text --coverageThreshold='{ "global": { "lines": 80 }}'
+
+  rust-tests:
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.rust == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          override: true
+      - name: Cargo tests
+        run: |
+          for dir in pallets/credential-registry pallets/proof-of-existence identity-governance-pallet substrate/pallet-state-board substrate/pallets/credential; do
+            if [ -f "$dir/Cargo.toml" ]; then
+              (cd $dir && cargo test --locked);
+            fi;
+          done
 
   integration-tests:
     needs: [detect-changes, python-tests, typescript-tests]

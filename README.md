@@ -1,5 +1,7 @@
 # Chai VC Platform
 
+![Coverage](./coverage.svg)
+
 End-to-end healthcare credentialing and hiring verification.
 
 ## Development
