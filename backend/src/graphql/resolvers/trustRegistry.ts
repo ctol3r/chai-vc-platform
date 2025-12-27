@@ -1,25 +1,38 @@
-import { getPolkadotApi, getSigner } from "@/blockchain/api";
+import { PolkadotService } from '../../blockchain/polkadot_service';
 
-function assertAdmin(ctx: any) {
-  if (!ctx.user?.roles?.includes("admin")) {
-    throw new Error("Unauthorized: admin role required");
+type TrustRegistryContext = {
+  user?: {
+    roles?: string[];
+  };
+};
+
+const polkadotService = new PolkadotService();
+
+function assertAdmin(ctx: TrustRegistryContext) {
+  if (!ctx.user?.roles?.includes('admin')) {
+    throw new Error('Unauthorized: admin role required');
   }
 }
 
 export const Mutation = {
-  async authorizeIssuer(_: any, { account }: { account: string }, ctx: any) {
+  async authorizeIssuer(
+    _parent: unknown,
+    { account }: { account: string },
+    ctx: TrustRegistryContext
+  ) {
     assertAdmin(ctx);
-    const api = await getPolkadotApi(); const signer = await getSigner(ctx);
-    const unsub = await api.tx.credentialPallet.authorizeIssuer(account)
-      .signAndSend(signer, ({ status }) => { if (status.isInBlock || status.isFinalized) unsub(); });
+    await polkadotService.authorizeIssuer(account);
     return true;
   },
-  async deauthorizeIssuer(_: any, { account }: { account: string }, ctx: any) {
+  async deauthorizeIssuer(
+    _parent: unknown,
+    { account }: { account: string },
+    ctx: TrustRegistryContext
+  ) {
     assertAdmin(ctx);
-    const api = await getPolkadotApi(); const signer = await getSigner(ctx);
-    const unsub = await api.tx.credentialPallet.deauthorizeIssuer(account)
-      .signAndSend(signer, ({ status }) => { if (status.isInBlock || status.isFinalized) unsub(); });
+    await polkadotService.deauthorizeIssuer(account);
     return true;
   },
 };
+
 export default { Mutation };

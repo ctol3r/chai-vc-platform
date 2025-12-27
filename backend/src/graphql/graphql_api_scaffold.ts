@@ -59,13 +59,29 @@ const typeDefs = gql`
   }
 `;
 
+type GraphQLContext = {
+  prisma: PrismaClient;
+  user?: {
+    roles?: string[];
+  };
+};
+
 const polkadotService = new PolkadotService();
 const auditScrapbook = new AuditScrapbook(polkadotService);
 
+function assertAdmin(context: GraphQLContext) {
+  if (!context.user?.roles?.includes('admin')) {
+    throw new Error('Unauthorized: admin role required');
+  }
+}
+
 async function handleTrustRegistryMutation(
   action: 'authorize' | 'deauthorize',
-  account: string
+  account: string,
+  context: GraphQLContext
 ): Promise<boolean> {
+  assertAdmin(context);
+
   const trimmed = account.trim();
   if (!trimmed) {
     return false;
@@ -93,19 +109,25 @@ async function handleTrustRegistryMutation(
 
 const resolvers = {
   Query: {
-    credentials: async (_parent: unknown, _args: unknown, ctx: { prisma: PrismaClient }) => {
+    credentials: async (
+      _parent: unknown,
+      _args: unknown,
+      ctx: GraphQLContext
+    ) => {
       return ctx.prisma.credential.findMany();
     },
   },
   Mutation: {
     authorizeIssuer: async (
       _parent: unknown,
-      args: { account: string }
-    ): Promise<boolean> => handleTrustRegistryMutation('authorize', args.account),
+      args: { account: string },
+      context: GraphQLContext
+    ): Promise<boolean> => handleTrustRegistryMutation('authorize', args.account, context),
     deauthorizeIssuer: async (
       _parent: unknown,
-      args: { account: string }
-    ): Promise<boolean> => handleTrustRegistryMutation('deauthorize', args.account),
+      args: { account: string },
+      context: GraphQLContext
+    ): Promise<boolean> => handleTrustRegistryMutation('deauthorize', args.account, context),
   },
 };
 
@@ -113,7 +135,7 @@ export async function startApolloServer(app: Express, prisma: PrismaClient) {
   const server = new ApolloServer({
     typeDefs,
     resolvers,
-    context: () => ({ prisma }),
+    context: ({ req }) => ({ prisma, user: (req as any)?.user }),
   });
   await server.start();
   server.applyMiddleware({ app });

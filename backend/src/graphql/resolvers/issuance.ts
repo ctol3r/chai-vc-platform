@@ -1,7 +1,11 @@
 import { PrismaClient } from '@prisma/client';
 import { PolkadotService } from '../../blockchain/polkadot_service';
 import { issueStatusProof } from '../../blockchain/acaPy';
-import { assertIssuer } from '../../auth/roles';
+const assertIssuer = (context: IssuanceContext) => {
+  if (!context.user?.roles?.includes('issuer')) {
+    throw new Error('Unauthorized: issuer role required');
+  }
+};
 
 const polkadotService = new PolkadotService();
 
