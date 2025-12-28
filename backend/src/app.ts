@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import { body } from 'express-validator';
 import { validateRequest } from './middleware/validateRequest';
 import { errorHandler } from './middleware/errorHandler';
+import { register } from './metrics';
 
 const app = express();
 
@@ -17,6 +18,11 @@ app.post(
     res.json({ message: 'Credential created' });
   }
 );
+
+app.get('/metrics', async (_: Request, res: Response) => {
+  res.set('Content-Type', register.contentType);
+  res.send(await register.metrics());
+});
 
 app.use(errorHandler);
 

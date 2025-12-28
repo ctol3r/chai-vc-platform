@@ -7,6 +7,8 @@ export interface VerificationRequest {
  * TokenPriorityQueue implements a simple priority queue for
  * verification requests. Higher priority values are processed first.
  */
+import { queueDepthGauge } from '../metrics';
+
 export default class TokenPriorityQueue {
   private queue: VerificationRequest[] = [];
 
@@ -21,13 +23,16 @@ export default class TokenPriorityQueue {
     } else {
       this.queue.splice(index, 0, request);
     }
+    queueDepthGauge.set(this.queue.length);
   }
 
   /**
    * Remove and return the highest priority request.
    */
   dequeue(): VerificationRequest | undefined {
-    return this.queue.shift();
+    const item = this.queue.shift();
+    queueDepthGauge.set(this.queue.length);
+    return item;
   }
 
   /**
