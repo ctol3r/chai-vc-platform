@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: backend-rollout
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: backend
+  strategy:
+    canary:
+      steps:
+        - setWeight: 30
+        - pause: {duration: 60}
+        - setWeight: 60
+        - pause: {duration: 60}
+      trafficRouting:
+        nginx: {}
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: backend
+          image: ghcr.io/ORG/backend:latest
+          ports:
+            - containerPort: 3000

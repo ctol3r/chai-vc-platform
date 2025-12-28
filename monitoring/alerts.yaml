@@ -1,0 +1,19 @@
+groups:
+  - name: chai-vc-alerts
+    rules:
+      - alert: OracleStale
+        expr: time() - max(oracle_last_update_timestamp) > 3600
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Oracle data stale"
+          description: "No oracle update for over an hour"
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~\"5..\"}[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High error rate"
+          description: "Service error rate greater than 5%"

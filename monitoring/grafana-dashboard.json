@@ -1,0 +1,28 @@
+{
+  "title": "Chai VC Platform",
+  "timezone": "browser",
+  "panels": [
+    {
+      "type": "graph",
+      "title": "Service Error Rate",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(rate(http_requests_total{status=~\"5..\"}[5m]))",
+          "legendFormat": "errors"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Oracle Update Lag",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "(time() - max(oracle_last_update_timestamp)) / 3600",
+          "legendFormat": "hours"
+        }
+      ]
+    }
+  ]
+}
